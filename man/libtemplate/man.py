@@ -226,7 +226,7 @@ def add_pkg_data(patern):
     else:
         pkg_data[package] = [patern]
 
-    click.secho('Added patern"%s" in package "%s".' % (patern, package), fg='green')
+    click.secho('Added patern "%s" in package "%s".' % (patern, package), fg='green')
 
 
 @add.command('pkg')
