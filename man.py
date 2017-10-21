@@ -1,19 +1,45 @@
 import glob
 import os
 import subprocess
+import sys
 
 import click
+import configlib
 import pypandoc
 
-import manconfig
 from setup import get_version, save_version
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
-CONFIG = manconfig.Config()
 
 
-def copy_template(FORMATERS: manconfig.Config, dir):
+class Config(configlib.Config):
+
+    __config_path__ = os.path.join(os.path.dirname(__file__), 'manconfig.json')
+
+    libname = ''
+    github_username = ''
+    fullname = ''
+    email = ''
+    pypi_username = ''
+
+    package_data = dict()
+    __package_data_type__ = configlib.Python(dict)
+
+    data_files = []
+    __data_files_type__ = configlib.Python(list)
+
+    packages = []
+    __packages_type__ = configlib.Python(list)
+
+    dependancies = []
+    __dependancies_type__ = configlib.Python(list)
+
+
+CONFIG = Config()
+
+
+def copy_template(FORMATERS: Config, dir):
 
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
@@ -201,32 +227,31 @@ def release(importance, message, test):
 @click.argument('dir', default='.')
 def new_lib(dir):
 
-    FORMATERS = CONFIG
-    FORMATERS.libname = click.prompt('Name of your library')
-    FORMATERS.description = click.prompt('Short description')
-    FORMATERS.fullname = click.prompt('Full name', default=FORMATERS.fullname)
-    FORMATERS.email = click.prompt('E-Mail', default=FORMATERS.email)
-    FORMATERS.github_username = click.prompt("Github username", default=FORMATERS.github_username)
-    FORMATERS.pypi_username = click.prompt('PyPi username', default=FORMATERS.pypi_username)
-    FORMATERS.__save__()
+    CONFIG.libname = click.prompt('Name of your library')
+    CONFIG.description = click.prompt('Short description')
+    CONFIG.fullname = click.prompt('Full name', default=CONFIG.fullname)
+    CONFIG.email = click.prompt('E-Mail', default=CONFIG.email)
+    CONFIG.github_username = click.prompt("Github username", default=CONFIG.github_username)
+    CONFIG.pypi_username = click.prompt('PyPi username', default=CONFIG.pypi_username)
+    CONFIG.__save__()
 
     try:
-        copy_template(FORMATERS, dir)
+        copy_template(CONFIG, dir)
     except Exception as e:
         print(repr(e))
         click.echo('Something went wrong.')
-        if click.confirm('Do you want to delete the directory %s' % FORMATERS.libname):
-            run('rm -rf %s' % FORMATERS.libname)
+        if click.confirm('Do you want to delete the directory %s' % CONFIG.libname):
+            run('rm -rf %s' % CONFIG.libname)
         return
 
-    LIB_DIR = os.path.abspath(os.path.join(dir, FORMATERS.libname))
-    run('cd %s' % FORMATERS.libname, True)
+    LIB_DIR = os.path.abspath(os.path.join(dir, CONFIG.libname))
+    run('cd %s' % CONFIG.libname, True)
     os.chdir(LIB_DIR)
     click.echo(os.path.abspath(os.curdir))
 
     # initialize man
-    run('py man.py add pkg %s' % FORMATERS.libname)
-    run('py man.py add pkg-data %s/version' % FORMATERS.libname)
+    run('py man.py add pkg %s' % CONFIG.libname)
+    run('py man.py add pkg-data %s/version' % CONFIG.libname)
     run('py man.py add file manconfig.*')
 
     # initilize git repo
@@ -235,11 +260,11 @@ def new_lib(dir):
     run('git commit -m "initial commit"')
     run(
         """curl -u '{github_username}' https://api.github.com/user/repos -d '{open}"name":"{libname}", "description": "{description}"{close}' """.format(
-            **FORMATERS.__dict__, open='{', close='}'))
-    run('git remote add origin https://github.com/{github_username}/{libname}'.format(**FORMATERS.__dict__))
+            **CONFIG.__dict__, open='{', close='}'))
+    run('git remote add origin https://github.com/{github_username}/{libname}'.format(**CONFIG.__dict__))
     run('git push origin master')
 
-    whats_next(FORMATERS)
+    whats_next(CONFIG)
 
 
 def staticmethod(func):

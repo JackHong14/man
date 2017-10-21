@@ -12,6 +12,10 @@
         "click==6.*",
         "pyconfiglib==1.*"
     ],
+    "email": "diego.dorn@free.fr",
+    "fullname": "Diego Dorn",
+    "github_username": "ddorn",
+    "libname": "lili",
     "package_data": {
         "man": [
             "version"
@@ -19,5 +23,6 @@
     },
     "packages": [
         "man"
-    ]
+    ],
+    "pypi_username": "ddorn"
 }
