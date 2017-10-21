@@ -47,5 +47,8 @@ if __name__ == '__main__':
         long_description=long_description,
         install_requires=config.dependancies,
         package_data=config.package_data,
-        data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern)))) for (dir, pats) in config.data_files]
+        data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern)))) for (dir, pats) in config.data_files],
+        entry_points={
+            'console_scripts': ['man=man:main']
+        }
     )
