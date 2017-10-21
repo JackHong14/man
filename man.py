@@ -1,3 +1,4 @@
+import functools
 import glob
 import os
 import subprocess
@@ -77,7 +78,7 @@ def release(importance, message, test):
     click.echo('Readme converted.')
 
     # uninstall the previous version because the test imports it :/
-    run('pip uninstall man --yes')
+    run('pip uninstall %s --yes' % CONFIG.libname)
 
     # make sure it passes the tests
     if run('pytest') != 0:
@@ -116,171 +117,202 @@ def release(importance, message, test):
         # We do not want to increase the version number at each test
         revert_version()
 
+def staticmethod(func):
+    return func
 
-@man.group()
-def add():
-    pass
+class MyCLI(click.MultiCommand):
+
+    aliases = {
+        'file': ['file', 'f'],
+        'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
+        'pkg': ['pkg', 'package'],
+        'dependancy': ['dependancy', 'dep']
+    }
+
+    def list_commands(self, ctx):
+        return sorted([aliases[0] for aliases in self.aliases.values()])
+
+    def get_command(self, ctx, name):
+        for cmd_name, aliases in self.aliases.items():
+            if name in aliases:
+                return getattr(self, cmd_name)
 
 
-@add.command(name='dep')
-@click.argument('lib')
-@click.argument('version', default='')
-def add_dep(lib, version):
+class AddCli(MyCLI):
 
-
-    if not version:
+    @click.command()
+    @click.argument('lib')
+    @click.argument('version', default='')
+    @staticmethod
+    def dependancy(lib, version):
         import importlib
         try:
             modul = importlib.import_module(lib)
         except ModuleNotFoundError:
             click.secho('The library %s does not exist or is not installed.' % lib, fg='red')
             return
-        ver = modul.__version__
-        click.echo('The current version of %s is %s' % (lib, click.style(ver, fg='green')))
 
-        default = 'Not specified'
-        version = click.prompt('Version', default=default)
-        version = '' if version == default else version
+        if not version:
+            ver = modul.__version__
+            click.echo('The current version of %s is %s' % (lib, click.style(ver, fg='green')))
 
-    if version and not version.startswith(('==', '>', '<', '!=')):  # ✓
-        version = '==' + version
+            default = 'Not specified'
+            version = click.prompt('Version', default=default)
+            version = '' if version == default else version
 
-    dep = '%s%s' % (lib, version)
+        if version and not version.startswith(('==', '>', '<', '!=')):  # ✓
+            version = '==' + version
 
-    if dep in CONFIG.dependancies:
-        click.secho('%s is already in the dependancies' % dep, fg='red')  # ✓
-        return
+        dep = '%s%s' % (lib, version)
 
-    CONFIG.dependancies.append(dep)
-    with open('requirements.txt', 'a') as f:
-        f.write(dep)
-    click.secho('Added dependancy %s' % dep, fg='green')
+        if dep in CONFIG.dependancies:
+            click.secho('%s is already in the dependancies' % dep, fg='red')  # ✓
+            return
 
+        CONFIG.dependancies.append(dep)
+        with open('requirements.txt', 'a') as f:
+            f.write(dep)
+        click.secho('Added dependancy %s' % dep, fg='green')
 
-@add.command('file')
-@click.argument('patern')
-def add_file(patern):
-    """
-    Add a non code file to the data_files of setup.py.
-    You can provide a glob patern and all the matchnig files will be added.
-    """
+    @click.command()
+    @click.argument('patern')
+    @staticmethod
+    def file(patern):
+        """
+        Add a non code file to the data_files of setup.py.
+        You can provide a glob patern and all the matchnig files will be added.
+        """
 
-    filenames = glob.glob(patern)
+        filenames = glob.glob(patern)
 
-    if not filenames:
-        click.secho('Not matching files for patern "%s".' % patern, fg='red')
-        return
+        if not filenames:
+            click.secho('Not matching files for patern "%s".' % patern, fg='red')
+            return
 
-    for filename in filenames:
-        filename = os.path.relpath(filename, os.path.dirname(__file__))
-        directory = os.path.relpath(os.path.dirname(filename) or '.', os.path.dirname(__file__))
-        directory = '' if directory == '.' else directory
+        for filename in filenames:
+            filename = os.path.relpath(filename, os.path.dirname(__file__))
+            directory = os.path.relpath(os.path.dirname(filename) or '.', os.path.dirname(__file__))
+            directory = '' if directory == '.' else directory
 
-        # it seems that package_data doesn't work for files inside packages, so we check if this file is in a pkg
-        for pkg in CONFIG.packages:
-            if directory.startswith(pkg):
-                # If it is, ask if we use pkg insead
-                click.echo('This file is included in the package ' + click.style(pkg, fg='yellow') + '.')
-                if click.confirm('Do you want to use ' + click.style('add pgk-data', fg='yellow') + ' instead ?'):
-                    run('man add pkg-data "%s" "%s"' % (pkg, os.path.relpath(filename, pkg)))
-                else:
-                    click.secho('The file "%s" was not included' % filename,fg='red')
-                break
-        else:
-            # we add the file if it wasn't in a pkg
-            for i, (direc, files) in enumerate(CONFIG.data_files):
-                if direc == directory:
-                    if filename not in files:
-                        files.append(filename)
-                        click.secho('Added "%s" in "%s".' % (filename, directory), fg='green')
+            # it seems that package_data doesn't work for files inside packages, so we check if this file is in a pkg
+            for pkg in CONFIG.packages:
+                if directory.startswith(pkg):
+                    # If it is, ask if we use pkg insead
+                    click.echo('This file is included in the package ' + click.style(pkg, fg='yellow') + '.')
+                    if click.confirm('Do you want to use ' + click.style('add pgk-data', fg='yellow') + ' instead ?'):
+                        run('man add pkg-data "%s" "%s"' % (pkg, os.path.relpath(filename, pkg)))
                     else:
-                        click.secho('The file "%s" was already included in "%s".' % (filename, directory), fg='yellow')
+                        click.secho('The file "%s" was not included' % filename, fg='red')
                     break
             else:
-                CONFIG.data_files.append((directory, [filename]))
-                click.secho('Added "%s" in "%s".' % (filename, directory), fg='green')
+                # we add the file if it wasn't in a pkg
+                for i, (direc, files) in enumerate(CONFIG.data_files):
+                    if direc == directory:
+                        if filename not in files:
+                            files.append(filename)
+                            click.secho('Added "%s" in "%s".' % (filename, directory), fg='green')
+                        else:
+                            click.secho('The file "%s" was already included in "%s".' % (filename, directory),
+                                        fg='yellow')
+                        break
+                else:
+                    CONFIG.data_files.append((directory, [filename]))
+                    click.secho('Added "%s" in "%s".' % (filename, directory), fg='green')
 
+    @click.command()
+    @click.argument('patern')
+    @staticmethod
+    def pkgdata(patern):
 
-@add.command('pkg-data')
-@click.argument('patern')
-def add_pkg_data(patern):
-
-    # try to find which package it's in. We start we the longest names in case
-    # it is in a sub package, we want to add it in the subpackage
-    # I don't really know if it matters but well
-    for package in sorted(CONFIG.packages, key=len, reverse=True):
-        if patern.startswith(package):
-            break
-    else:
-        click.secho("This file doesn't seems to be included in a defined package.")
-        if click.prompt('Do you want to add it as a regular file ?', default=True):
-            run('man add file %s' % patern)
-        return
-
-    patern = patern[len(package) + 1:]  # remove the package
-    pkg_data = CONFIG.package_data
-    if package in pkg_data:
-        if patern in pkg_data[package]:
-            click.secho('The patern "%s" was already included in the package "%s".' % (patern, package), fg='yellow')
+        # try to find which package it's in. We start we the longest names in case
+        # it is in a sub package, we want to add it in the subpackage
+        # I don't really know if it matters but well
+        for package in sorted(CONFIG.packages, key=len, reverse=True):
+            if patern.startswith(package):
+                break
+        else:
+            click.secho("This file doesn't seems to be included in a defined package.")
+            if click.prompt('Do you want to add it as a regular file ?', default=True):
+                run('man add file %s' % patern)
             return
-        pkg_data[package].append(patern)
-    else:
-        pkg_data[package] = [patern]
 
-    click.secho('Added patern"%s" in package "%s".' % (patern, package), fg='green')
+        patern = patern[len(package) + 1:]  # remove the package
+        pkg_data = CONFIG.package_data
+        if package in pkg_data:
+            if patern in pkg_data[package]:
+                click.secho('The patern "%s" was already included in the package "%s".' % (patern, package),
+                            fg='yellow')
+                return
+            pkg_data[package].append(patern)
+        else:
+            pkg_data[package] = [patern]
 
+        click.secho('Added patern "%s" in package "%s".' % (patern, package), fg='green')
 
-@add.command('pkg')
-@click.argument('pkg-dir')
-def add_pkg(pkg_dir: str):
-    """
-    Registers a package.
+    @click.command()
+    @click.argument('pkg-dir')
+    @staticmethod
+    def pkg(pkg_dir: str):
+        """
+        Registers a package.
 
-    A package is somthing people will be import by doing `import mypackage` or
-    `import mypackage.mysubpackage`. They must have a __init__.py file.
+        A package is somthing people will be import by doing `import mypackage` or
+        `import mypackage.mysubpackage`. They must have a __init__.py file.
 
-    Examples:
+        Examples:
 
-        man add pkg mypackage
+            man add pkg mypackage
 
-        man add pkg mypackage/mysubpackage
-    """
+            man add pkg mypackage/mysubpackage
+        """
 
-    pkg_dir = pkg_dir.replace('\\', '/')
-    parts = [part for part in pkg_dir.split('/') if part]  # thus removing thinks like final slash...
-    pkg_name = '.'.join(parts)
+        pkg_dir = pkg_dir.replace('\\', '/')
+        parts = [part for part in pkg_dir.split('/') if part]  # thus removing thinks like final slash...
+        pkg_name = '.'.join(parts)
 
-    if pkg_name in CONFIG.packages:
-        click.secho('The package %s is already in the packages list.' % pkg_dir, fg='yellow')
-        return
-
-    if not all(part.isidentifier() for part in parts):
-        click.secho('The name "%s" is not a valid package name or path.' % pkg_dir, fg='red')
-        return
-
-    new_pkg = False
-    if not os.path.isdir(pkg_dir):  # dir + exists
-        click.secho('It seems there is no directory matching your package path', fg='yellow')
-        if not click.confirm('Do you want to create the package %s ?' % pkg_dir, default=True):
+        if pkg_name in CONFIG.packages:
+            click.secho('The package %s is already in the packages list.' % pkg_dir, fg='yellow')
             return
-        # creating dir
-        os.makedirs(pkg_dir, exist_ok=True)
-        click.secho('Package created !', fg='green')
-        new_pkg = True
 
-    if new_pkg or not os.path.exists(os.path.join(pkg_dir, '__init__.py')):
-        if not new_pkg:
-            click.secho('The package is missing an __init__.py.', fg='yellow')
-        if new_pkg or click.confirm('Do you want to add one ?', default=True):
-            # creating __init__.py
-            with open(os.path.join(pkg_dir, '__init__.py'), 'w') as f:
-                f.write('"""\nPackage %s\n"""' % pkg_name)
-            click.secho('Added __init__.py in %s' % pkg_dir, fg='green')
+        if not all(part.isidentifier() for part in parts):
+            click.secho('The name "%s" is not a valid package name or path.' % pkg_dir, fg='red')
+            return
 
-    CONFIG.packages.append(pkg_name)
-    click.secho('The package %s was added to the package list.' % pkg_name, fg='green')
+        new_pkg = False
+        if not os.path.isdir(pkg_dir):  # dir + exists
+            click.secho('It seems there is no directory matching your package path', fg='yellow')
+            if not click.confirm('Do you want to create the package %s ?' % pkg_dir, default=True):
+                return
+            # creating dir
+            os.makedirs(pkg_dir, exist_ok=True)
+            click.secho('Package created !', fg='green')
+            new_pkg = True
 
+        if new_pkg or not os.path.exists(os.path.join(pkg_dir, '__init__.py')):
+            if not new_pkg:
+                click.secho('The package is missing an __init__.py.', fg='yellow')
+            if new_pkg or click.confirm('Do you want to add one ?', default=True):
+                # creating __init__.py
+                with open(os.path.join(pkg_dir, '__init__.py'), 'w') as f:
+                    f.write('"""\nPackage %s\n"""' % pkg_name)
+                click.secho('Added __init__.py in %s' % pkg_dir, fg='green')
+
+        CONFIG.packages.append(pkg_name)
+        click.secho('The package %s was added to the package list.' % pkg_name, fg='green')
+
+
+class RemoveCLI(MyCLI):
+    ...
+
+@man.command(cls=AddCli)
+def add():
+    """Add something to your project."""
+
+@man.command(cls=RemoveCLI)
+def remove():
+    """Remove something from your project."""
 
 if __name__ == '__main__':
+
     with CONFIG:
         man()
