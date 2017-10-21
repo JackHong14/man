@@ -1,12 +1,13 @@
 language: python
 python:
-  - '3.6'
+- '3.6'
 script:
-  - pytest
+- pytest
 deploy:
   provider: pypi
-  user: 'ddorn'
-  password: mypassword 
+  user: ddorn
+  password:
+    secure: dzZ6V66P9fdUg2Gx7f5VyiQFqFhnU+ypsQysixGUkIskP19t7+1Kkh+L4EgjpvL2sRyr3MRNGAxfSqDf9e2xqitnHOQ9paspRLCtxcrXvAFCTKWAnGsqP1gpNnrJw2e/Ed7TffBpfhtjXdoa2m4r/GiWmT+YwNt0kZ6Fcl91pnctaql2NyOFiQ2yKfETbRAi9IGAQxwJ1ETG4WL2190f7B60+BISU+BVHcVpiZ3B/KZtzfhbSi/NH/LHMZKs43uVftpElNlj/srUDkpNvM3JfS7p+VIA2onbnMn5ntbcg413kusniAI9NhrEgm3qZARhXrsr+GImZKKEw521MveCmWR4cJhc0xq0Ei9rduLE1ClyD8yK4gpUEPuG9ignEWp6ALEQbijOnAytomugbwf8rCrBEkoto22X5x7q8SV16fud9/2VKtqnK9b/vbr7mOBqu/L+ftK/HA1eT2TrGPxfA6C6kGpcADQ2XTSCQOddP04l6z+aHEOQJhkT2Y1yKgsZMKyf1D7fmOSYsjT0vKpi6THJ0BS3CCoJlX1Ki+enS+tP8qtqdk0rElRDEihlovIKKUJbbPHW6bvGY19+sm5v5tj/S1+WZOHB1JY7SHKT/gx8IGFuAYuJlx9s0CTP8g6QIDc9O2JoVilJ5vpxZawWIeaTrfwONq2B/HGAFet/BDo=
   on:
     condition: $TRAVIS_PYTHON_VERSION = "3.6"
     tags: true
