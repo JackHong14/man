@@ -8,7 +8,10 @@
             ]
         ]
     ],
-    "dependancies": [],
+    "dependancies": [
+        "click==6.*",
+        "pyconfiglib==1.*"
+    ],
     "package_data": {
         "man": [
             "version"
