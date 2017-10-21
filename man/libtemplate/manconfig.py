@@ -4,6 +4,9 @@ class Config(configlib.Config):
 
     __config_path__ = 'manconfig.json'
 
+    libname = ''
+    github_username = ''
+
     package_data = dict()
     __package_data_type__ = configlib.Python(dict)
 
