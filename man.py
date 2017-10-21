@@ -126,14 +126,15 @@ def add():
 @click.argument('lib')
 @click.argument('version', default='')
 def add_dep(lib, version):
-    import importlib
-    try:
-        modul = importlib.import_module(lib)
-    except ModuleNotFoundError:
-        click.secho('The library %s does not exist or is not installed.' % lib, fg='red')
-        return
+
 
     if not version:
+        import importlib
+        try:
+            modul = importlib.import_module(lib)
+        except ModuleNotFoundError:
+            click.secho('The library %s does not exist or is not installed.' % lib, fg='red')
+            return
         ver = modul.__version__
         click.echo('The current version of %s is %s' % (lib, click.style(ver, fg='green')))
 
