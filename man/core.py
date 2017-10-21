@@ -4,7 +4,7 @@ import subprocess
 import click
 import sys
 
-import config
+from . import config
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
@@ -102,6 +102,9 @@ def whats_next(FORMATERS):
             bullet(2) + 'Open ' + link('https://travis-ci.org/profile/%s' % FORMATERS.github_username),
             bullet(2) + 'Switch %s/%s to on' % (FORMATERS.github_username, FORMATERS.libname),
         bullet(1) + 'Write some code',
+        bullet(1) + 'Add the dependancies:',
+            bullet(2) + 'Run ' + code('man add dep pyconfiglib 1.*'),
+            bullet(2) + 'Run ' + code('man add click'),
         bullet(1) + 'Create your first release:',
             bullet(2) + 'With ' + code('man release major'),
         bullet(1) + 'Read more about ' + code('man') + ' to manage your project after the creation:',
