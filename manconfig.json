@@ -1,0 +1,20 @@
+{
+    "data_files": [
+        [
+            "",
+            [
+                "manconfig.json",
+                "manconfig.py"
+            ]
+        ]
+    ],
+    "dependancies": [],
+    "package_data": {
+        "man": [
+            "version"
+        ]
+    },
+    "packages": [
+        "man"
+    ]
+}

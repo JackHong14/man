@@ -1,0 +1,17 @@
+__pycache__/
+
+# editors
+.vscode
+.idea/
+
+# log files + rotating logs
+*.log
+*.log.*
+
+# setuptools
+dist/
+build/
+*.egg-info/
+
+# pytest
+.cache/
