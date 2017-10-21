@@ -14,7 +14,6 @@ TEST = False
 
 
 class Config(configlib.Config):
-
     __config_path__ = os.path.join(os.path.dirname(__file__), 'config.json')
 
     libname = ''
@@ -40,7 +39,6 @@ CONFIG = Config()
 
 
 def copy_template(FORMATERS: Config, dir):
-
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
     LIB_DIR = os.path.abspath(os.path.join(dir, FORMATERS.libname))
@@ -88,20 +86,20 @@ def whats_next(FORMATERS):
         '',
         'Here are the few steps that you still need to do:',
         bullet(1) + 'Add your encrypted password for pypi to .travis.yml. For that:',
-        bullet(2) + 'Open ' + code('bash', fg='green'),
-        bullet(2) + 'Run ' + code('travis encrypt --add deploy.password'),
+            bullet(2) + 'Open ' + code('bash', fg='green'),
+            bullet(2) + 'Run ' + code('travis encrypt --add deploy.password'),
         bullet(1) + 'Activate the continuous integration for this repo in Travis:',
-        bullet(2) + 'Open ' + link('https://travis-ci.org/profile/%s' % FORMATERS.github_username),
-        bullet(2) + 'Switch %s/%s to on' % (FORMATERS.github_username, FORMATERS.libname),
+            bullet(2) + 'Open ' + link('https://travis-ci.org/profile/%s' % FORMATERS.github_username),
+            bullet(2) + 'Switch %s/%s to on' % (FORMATERS.github_username, FORMATERS.libname),
         bullet(1) + 'Write some code',
         bullet(1) + 'Add the dependancies:',
-        bullet(2) + 'Run ' + code('man add dep pyconfiglib 1.*'),
-        bullet(2) + 'Run ' + code('man add click'),
+            bullet(2) + 'Run ' + code('man add dep pyconfiglib 1.*'),
+            bullet(2) + 'Run ' + code('man add click'),
         bullet(1) + 'Create your first release:',
-        bullet(2) + 'With ' + code('man release major'),
+            bullet(2) + 'With ' + code('man release major'),
         bullet(1) + 'Read more about ' + code('man') + ' to manage your project after the creation:',
-        bullet(2) + 'Run ' + code('man --help'),
-        bullet(2) + 'Read ' + link('https://github.com/ddorn/man'),
+            bullet(2) + 'Run ' + code('man --help'),
+            bullet(2) + 'Read ' + link('https://github.com/ddorn/man'),
         '',
         ''
     ]
@@ -117,7 +115,6 @@ def whats_next(FORMATERS):
 
 
 def run(cmd: str, test=False):
-
     click.secho('$ ', fg='green', bold=1, nl=0)
     click.secho(cmd, fg='cyan', bold=1)
 
@@ -226,7 +223,6 @@ def release(importance, message, test):
 @man.command()
 @click.argument('dir', default='.')
 def new_lib(dir):
-
     CONFIG.libname = click.prompt('Name of your library')
     CONFIG.description = click.prompt('Short description')
     CONFIG.fullname = click.prompt('Full name', default=CONFIG.fullname)
@@ -271,10 +267,7 @@ def staticmethod(func):
     return func
 
 
-
-
 class MyCLI(click.MultiCommand):
-
     aliases = {
         'file': ['file', 'f'],
         'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
@@ -292,7 +285,6 @@ class MyCLI(click.MultiCommand):
 
 
 class AddCli(MyCLI):
-
     @click.command()
     @click.argument('lib')
     @click.argument('version', default='')
@@ -457,15 +449,17 @@ class AddCli(MyCLI):
 class RemoveCLI(MyCLI):
     ...
 
+
 @man.command(cls=AddCli)
 def add():
     """Add something to your project."""
+
 
 @man.command(cls=RemoveCLI)
 def remove():
     """Remove something from your project."""
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     with CONFIG:
         man()
