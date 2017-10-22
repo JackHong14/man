@@ -198,7 +198,7 @@ def release(config, importance, message, test, again):
             version[i] = 0
 
     # save the version
-    config.version = '.'.join(*version)
+    config.version = '%d.%d.%d' % tuple(version)
 
     # changing version in the readme +
     # converting the readme in markdown to the one in rst
