@@ -270,7 +270,7 @@ def config(args):
 @man.command('new')
 @click.argument('dir', default='.')
 @pass_config
-def new_lib(config, dir):
+def new_lib(config: ManConfig, dir):
 
     with GeneralConfig() as general_config:
         config.libname = click.prompt('Name of your library')
@@ -279,6 +279,7 @@ def new_lib(config, dir):
         config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
         config.github_username = general_config.github_username = click.prompt("Github username", default=general_config.github_username)
         config.pypi_username = general_config.pypi_username = click.prompt('PyPi username', default=general_config.pypi_username)
+
 
     try:
         copy_template(config, dir)
@@ -293,6 +294,7 @@ def new_lib(config, dir):
     run('cd %s' % config.libname, True)
     os.chdir(LIB_DIR)
     click.echo(os.path.abspath(os.curdir))
+    config.__config_path__ = os.path.join(LIB_DIR, 'manconfig.json')
 
     # initialize man
     run('man add pkg %s' % config.libname)
