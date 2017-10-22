@@ -296,7 +296,6 @@ def new_lib(config, dir):
 
     # initialize man
     run('man add pkg %s' % config.libname)
-    run('man add pkg-data %s/version' % config.libname)
     run('man add file manconfig.*')
 
     # initilize git repo
