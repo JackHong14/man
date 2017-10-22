@@ -215,21 +215,15 @@ class AddCli(AddRemCLI):
         Aliases: dependancy, dep
         """
 
-        import importlib
-
-        try:
-            modul = importlib.import_module(lib)
-        except ModuleNotFoundError:
-            click.secho('The library %s does not exist or is not installed.' % lib, fg='red')
-            return
 
         if not version:
-            ver = modul.__version__
-            click.echo('The current version of %s is %s' % (lib, click.style(ver, fg='green')))
+            a = run('pip freeze', output=True)
+            for line in a.splitlines():
+                if lib in line:
+                    click.echo(line)
 
-            default = 'Not specified'
-            version = click.prompt('Version', default=default)
-            version = '' if version == default else version
+            dep = click.prompt('Requirement')
+            lib = ''  # lib is included in dep
 
         if version and not version.startswith(('==', '>', '<', '!=')):  # ✓
             version = '==' + version
@@ -242,7 +236,7 @@ class AddCli(AddRemCLI):
 
         config.dependancies.append(dep)
         with open('requirements.txt', 'a') as f:
-            f.write(dep)
+            f.write(dep + '\n')
         click.secho('Added dependancy %s' % dep, fg='green')
 
     @click.command()
