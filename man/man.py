@@ -45,8 +45,8 @@ def run(cmd: str, test=False):
     click.secho('$ ', fg='green', bold=1, nl=0)
     click.secho(cmd, fg='cyan', bold=1)
 
-    # if cmd.startswith('man '):
-    #     cmd = cmd.replace('man', 'python ' + __file__, 1)
+    if cmd.startswith('man '):
+        cmd = cmd.replace('man', 'python ' + __file__, 1)
 
     if not test:
         process = subprocess.Popen(cmd)
@@ -281,9 +281,9 @@ def new_lib(config, dir):
     click.echo(os.path.abspath(os.curdir))
 
     # initialize man
-    run('py man.py add pkg %s' % config.libname)
-    run('py man.py add pkg-data %s/version' % config.libname)
-    run('py man.py add file manconfig.*')
+    run('man add pkg %s' % config.libname)
+    run('man add pkg-data %s/version' % config.libname)
+    run('man add file manconfig.*')
 
     # initilize git repo
     run('git init .')
