@@ -9,8 +9,12 @@ def save_version(config, major, minor, patch):
 
 
 
-class Config(configlib.Config):
-    __config_path__ = os.path.join(os.path.dirname(__file__), 'manconfig.json')
+class ManConfig(configlib.Config):
+    """
+    This configuration is used for each lib to describe it.
+    """
+
+    __config_path__ = 'manconfig.json'
 
     libname = ''
     github_username = ''
