@@ -43,7 +43,7 @@ def pass_config(func):
     return inner
 
 
-def run(cmd: str, test=False):
+def run(cmd: str, test=False, output=False):
     """
     Create a process to run a given command.
 
@@ -60,9 +60,14 @@ def run(cmd: str, test=False):
         cmd = cmd.replace('man', 'python ' + __file__, 1)
 
     if not test:
-        process = subprocess.Popen(cmd)
-        out, err = process.communicate()
-        return process.returncode
+        if output:
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+            out, err = process.communicate()
+            return out
+        else:
+            process = subprocess.Popen(cmd)
+            out, err = process.communicate()
+            return process.returncode
     return 0
 
 
