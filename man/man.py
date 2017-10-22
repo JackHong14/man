@@ -247,6 +247,14 @@ def release(config, importance, message, test, again):
         revert_version()
 
 
+@man.command()
+@pass_config
+def install(config):
+    """Uninstall the last version and add the one in developpement."""
+    run('pip uninstall %s' % config.libname)
+    run('py setup.py install --user')
+
+
 @man.command(context_settings=dict(ignore_unknown_options=True))
 @click.argument('args', nargs=-1)
 def config(args):
