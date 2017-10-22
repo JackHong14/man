@@ -220,7 +220,7 @@ def release(importance, message, test):
         revert_version()
 
 
-@man.command()
+@man.command(context_settings=dict(ignore_unknown_options=True))
 @click.argument('args', nargs=-1)
 def config(args):
     sys.argv[1:] = args
