@@ -9,7 +9,6 @@
         ]
     ],
     "dependancies": [
-        "click==6.*",
         "pyconfiglib==1.*"
     ],
     "email": "diego.dorn@free.fr",
