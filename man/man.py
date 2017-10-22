@@ -542,12 +542,21 @@ class ManCLi(AliasCLI):
     @click.command(cls=AddCli)
     @staticmethod
     def add():
-        """Add something to your project."""
+        """
+        Add something to your project.
+
+        This action can be undone by calling man remove with the same arguments.
+        If you want to see what was exactly added, you can run man config --show
+        """
 
     @click.command(cls=RemoveCLI)
     @staticmethod
     def remove():
-        """Remove something from your project."""
+        """
+        NOT IMPLEMENTED: Remove something from your project.
+
+        This action can be undone by running man add with the same arguments.
+        """
 
 
 @click.command(cls=ManCLi)
