@@ -12,9 +12,9 @@ if __name__ == '__main__':
     except FileNotFoundError:
         long_description = 'Configuration for python made easy'
 
-    import manconfig
+    from man.manconfig import ManConfig
 
-    config = manconfig.Config()
+    config = ManConfig()
 
     setup(
         name='{libname}',
