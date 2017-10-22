@@ -18,7 +18,7 @@
     "package_data": {
         "man": [
             "version",
-            "libtemplate\\*"
+            "libtemplate\\**"
         ]
     },
     "packages": [
