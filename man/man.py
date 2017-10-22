@@ -126,9 +126,10 @@ def man(test):
 @man.command()
 @click.argument('importance', type=click.Choice(TYPES))
 @click.argument('message', nargs=-1)
-@click.option('--test', is_flag=True)
+@click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
+@click.option('--again', is_flag=True, help='Do not increse the version but move the release tag to the last commit. Usefull if something failed.')
 @pass_config
-def release(config, importance, message, test):
+def release(config, importance, message, test, again):
     """Deploy a project: update version, add tag, and push."""
 
     global TEST
@@ -144,12 +145,13 @@ def release(config, importance, message, test):
         save_version(*last_version)
         click.secho('Version reverted to %s' % get_version(), fg='yellow')
 
-    importance = TYPES.index(importance)
-    # we increase major/minor/path as chosen
-    version[importance] += 1
-    # en reset the ones after
-    for i in range(importance + 1, 3):
-        version[i] = 0
+    if not again:
+        importance = TYPES.index(importance)
+        # we increase major/minor/path as chosen
+        version[importance] += 1
+        # en reset the ones after
+        for i in range(importance + 1, 3):
+            version[i] = 0
 
     # save the version
     save_version(*version)
@@ -195,8 +197,12 @@ def release(config, importance, message, test):
 
     if click.confirm('Are you sure you want to create a new release (v%s)?' % version):
         # creating a realase with the new version
-        run('git tag v%s -a -m "%s"' % (version, message), test)
-        run('git push origin --tags', test)
+        if again:
+            run('git tag v%s -af -m "%s"' % (version, message), test)
+            run('git push origin -f --tags', test)
+        else:
+            run('git tag v%s -a -m "%s"' % (version, message), test)
+            run('git push origin --tags', test)
 
         click.secho('Version changed to ' + version, fg='green')
     else:
