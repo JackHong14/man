@@ -12,10 +12,7 @@ def copy(from_, to):
     with open(to, 'w') as f:
         f.write(text)
 
-# The one to manage my package
-copy('man/libtemplate/man.py', 'man.py')
-# The one to install with the module
-copy('man/libtemplate/man.py', 'man/man.py')
-# copy('man/libtemplate/manconfig.py', 'man/manconfig.py'
+# The one to install with the module --> the one to manage my package
+copy('man/man.py', 'man.py')
 
 print('Done!')
