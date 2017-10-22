@@ -7,7 +7,12 @@ import click
 import configlib
 import pypandoc
 
-from manconfig import ManConfig
+try:
+    from manconfig import ManConfig
+    from mangeneralconfig import GeneralConfig
+except ImportError:
+    from .manconfig import ManConfig
+    from .mangeneralconfig import GeneralConfig
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
