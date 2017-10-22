@@ -1,5 +1,4 @@
 import configlib
-import os
 
 
 def save_version(config, major, minor, patch):
@@ -7,14 +6,12 @@ def save_version(config, major, minor, patch):
         config.version = '%d.%d.%d' % (major, minor, patch)
 
 
-
-
 class ManConfig(configlib.Config):
     """
     This configuration is used for each lib to describe it.
     """
 
-    __config_path__ = 'manconfig.json'
+    __config_path__ = './manconfig.json'  # always in the directory where invocated
 
     libname = ''
     github_username = ''

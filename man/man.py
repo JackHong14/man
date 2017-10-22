@@ -7,7 +7,7 @@ import click
 import configlib
 import pypandoc
 
-from manconfig import Config
+from .manconfig import ManConfig
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
@@ -18,7 +18,7 @@ def staticmethod(func):
 
 def pass_config(func):
     def inner(*args, **kwargs):
-        with Config() as config:
+        with ManConfig() as config:
             return func(config, *args, **kwargs)
     inner.__name__ = func.__name__
     inner.__doc__ = func.__doc__
@@ -60,7 +60,7 @@ def convert_readme(config=None):
         f.write(rst)
     click.echo('Readme converted.')
 
-def whats_next(FORMATERS: Config):
+def whats_next(FORMATERS: ManConfig):
     import functools
     s = click.style
     code = functools.partial(s, fg='green')
@@ -101,7 +101,7 @@ def whats_next(FORMATERS: Config):
         import webbrowser
         webbrowser.open('https://travis-ci.org/profile/%s' % FORMATERS.github_username)
 
-def copy_template(FORMATERS: Config, dir):
+def copy_template(FORMATERS: ManConfig, dir):
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
     LIB_DIR = os.path.abspath(os.path.join(dir, FORMATERS.libname))
@@ -137,7 +137,7 @@ def copy_template(FORMATERS: Config, dir):
 
 @click.group()
 @click.option('--test', is_flag=True)
-@click.version_option(Config().version)
+@click.version_option(ManConfig().version)
 def man(test):
     global TEST
     TEST = test
@@ -228,7 +228,7 @@ def release(config, importance, message, test, again):
 @click.argument('args', nargs=-1)
 def config(args):
     sys.argv[1:] = args
-    configlib.update_config(Config)
+    configlib.update_config(ManConfig)
 
 
 @man.command()
