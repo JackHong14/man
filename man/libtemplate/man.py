@@ -21,6 +21,8 @@ def pass_config(func):
     def inner(*args, **kwargs):
         with Config() as config:
             return func(config, *args, **kwargs)
+    inner.__name__ = func.__name__
+    inner.__doc__ = func.__doc__
     return inner
 
 def run(cmd: str, test=False):
