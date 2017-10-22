@@ -49,6 +49,6 @@ if __name__ == '__main__':
         package_data=config.package_data,
         data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern)))) for (dir, pats) in config.data_files],
         entry_points={
-            'console_scripts': ['man=man:main']
+            'console_scripts': ['man=man.man:man']
         }
     )
