@@ -192,7 +192,7 @@ class AliasCLI(click.MultiCommand):
 class AddRemCLI(AliasCLI):
     aliases = {
         'file': ['file', 'f'],
-        'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
+        'pkgdata': ['pkg-data', 'pkgdata', 'data'],
         'pkg': ['pkg', 'package'],
         'dependancy': ['dependancy', 'dep']
     }
@@ -214,7 +214,6 @@ class AddCli(AddRemCLI):
 
         Aliases: dependancy, dep
         """
-
 
         if not version:
             a = run('pip freeze', output=True)
@@ -245,8 +244,12 @@ class AddCli(AddRemCLI):
     @staticmethod
     def file(config, patern):
         """
-        Add a non code file to the data_files of setup.py.
-        You can provide a glob patern and all the matchnig files will be added.
+        Add a file that is not in a package.
+
+        You can specify a recursive glob patern and then all files matching will
+        be added.
+
+        Aliases: file, f
         """
 
         filenames = glob.glob(patern)
@@ -286,37 +289,6 @@ class AddCli(AddRemCLI):
                     click.secho('Added "%s" in "%s".' % (filename, directory), fg='green')
 
     @click.command()
-    @click.argument('patern')
-    @pass_config
-    @staticmethod
-    def pkgdata(config, patern):
-
-        # try to find which package it's in. We start we the longest names in case
-        # it is in a sub package, we want to add it in the subpackage
-        # I don't really know if it matters but well
-        for package in sorted(config.packages, key=len, reverse=True):
-            if patern.startswith(package):
-                break
-        else:
-            click.secho("This file doesn't seems to be included in a defined package.")
-            if click.prompt('Do you want to add it as a regular file ?', default=True):
-                run('man add file %s' % patern)
-            return
-
-        patern = patern[len(package) + 1:]  # remove the package
-        pkg_data = config.package_data
-        if package in pkg_data:
-            if patern in pkg_data[package]:
-                click.secho('The patern "%s" was already included in the package "%s".' % (patern, package),
-                            fg='yellow')
-                return
-            pkg_data[package].append(patern)
-        else:
-            pkg_data[package] = [patern]
-
-        click.secho('Added patern "%s" in package "%s".' % (patern, package), fg='green')
-
-    @click.command()
     @click.argument('pkg-dir')
     @staticmethod
     @pass_config
@@ -327,11 +299,7 @@ class AddCli(AddRemCLI):
         A package is somthing people will be import by doing `import mypackage` or
         `import mypackage.mysubpackage`. They must have a __init__.py file.
 
-        Examples:
-
-            man add pkg mypackage
-
-            man add pkg mypackage/mysubpackage
+        Aliases: pkg, package
         """
 
         pkg_dir = pkg_dir.replace('\\', '/')
@@ -367,6 +335,42 @@ class AddCli(AddRemCLI):
 
         config.packages.append(pkg_name)
         click.secho('The package %s was added to the package list.' % pkg_name, fg='green')
+
+    @click.command()
+    @click.argument('patern')
+    @pass_config
+    @staticmethod
+    def pkgdata(config, patern):
+        """
+        Add a file that is outside packages.
+
+        You can specify a PATERN and then all the maching files will be added.
+        """
+
+        # try to find which package it's in. We start we the longest names in case
+        # it is in a sub package, we want to add it in the subpackage
+        # I don't really know if it matters but well
+        for package in sorted(config.packages, key=len, reverse=True):
+            if patern.startswith(package):
+                break
+        else:
+            click.secho("This file doesn't seems to be included in a defined package.")
+            if click.prompt('Do you want to add it as a regular file ?', default=True):
+                run('man add file %s' % patern)
+            return
+
+        patern = patern[len(package) + 1:]  # remove the package
+        pkg_data = config.package_data
+        if package in pkg_data:
+            if patern in pkg_data[package]:
+                click.secho('The patern "%s" was already included in the package "%s".' % (patern, package),
+                            fg='yellow')
+                return
+            pkg_data[package].append(patern)
+        else:
+            pkg_data[package] = [patern]
+
+        click.secho('Added patern "%s" in package "%s".' % (patern, package), fg='green')
 
 
 class RemoveCLI(AddRemCLI):
