@@ -453,7 +453,7 @@ class ManCLi(AliasCLI):
     @pass_config
     @staticmethod
     def install(config: ManConfig):
-        """Uninstall the last version and add the one in developpement."""
+        """Replace the last version by the current one."""
 
         run('pip uninstall %s --yes' % config.libname)
         run('py setup.py install --user')
@@ -462,7 +462,7 @@ class ManCLi(AliasCLI):
     @click.argument('args', nargs=-1)
     @staticmethod
     def config(args):
-        """Update the configuration for the given project."""
+        """Update the configuration for your project."""
 
         sys.argv[1:] = args
         configlib.update_config(ManConfig)
@@ -472,6 +472,7 @@ class ManCLi(AliasCLI):
     @pass_config
     @staticmethod
     def new_lib(config: ManConfig, dir):
+        """Create a new library in DIR. (Default: '.')"""
 
         with GeneralConfig() as general_config:
             config.libname = click.prompt('Name of your library')
