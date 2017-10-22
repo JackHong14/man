@@ -11,6 +11,7 @@
     "dependancies": [
         "pyconfiglib==1.*"
     ],
+    "description": "",
     "email": "diego.dorn@free.fr",
     "fullname": "Diego Dorn",
     "github_username": "ddorn",

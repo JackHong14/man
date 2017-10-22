@@ -251,7 +251,7 @@ def release(config, importance, message, test, again):
 @pass_config
 def install(config):
     """Uninstall the last version and add the one in developpement."""
-    run('pip uninstall %s' % config.libname)
+    run('pip uninstall %s --yes' % config.libname)
     run('py setup.py install --user')
 
 
