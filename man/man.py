@@ -101,7 +101,6 @@ def whats_next(FORMATERS: Config):
         import webbrowser
         webbrowser.open('https://travis-ci.org/profile/%s' % FORMATERS.github_username)
 
-
 def copy_template(FORMATERS: Config, dir):
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
@@ -178,7 +177,7 @@ def release(config, importance, message, test, again):
     # save the version
     config.version = '.'.join(*version)
 
-    # changing version in the readme + 
+    # changing version in the readme +
     # converting the readme in markdown to the one in rst
     convert_readme(config)
 
@@ -268,8 +267,8 @@ def new_lib(dir):
     run('git add .')
     run('git commit -m "initial commit"')
     run(
-        """curl -u '{github_username}' https://api.github.com/user/repos -d '{open}"name":"{libname}", "description": "{description}"{close}' """.format(
-            **config.__dict__, open='{', close='}'))
+        """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
+            **config.__dict__) % (chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
     run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
     run('git push origin master')
 
