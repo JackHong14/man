@@ -204,6 +204,7 @@ def release(config, importance, message, test, again):
 
     # save the version
     config.version = '%d.%d.%d' % tuple(version)
+    config.__save__()
 
     # changing version in the readme +
     # converting the readme in markdown to the one in rst
@@ -279,7 +280,6 @@ def new_lib(config: ManConfig, dir):
         config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
         config.github_username = general_config.github_username = click.prompt("Github username", default=general_config.github_username)
         config.pypi_username = general_config.pypi_username = click.prompt('PyPi username', default=general_config.pypi_username)
-
 
     try:
         copy_template(config, dir)
