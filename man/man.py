@@ -200,7 +200,18 @@ class AddCli(AddRemCLI):
     @pass_config
     @staticmethod
     def dependancy(config, lib, version):
+        """
+        Add a dependancy for your project.
+
+        This show the installed libraries that matchs LIB and you can then choose
+        the version you want. If a VERSION is provided, it just adds directly the
+        the lib and the version to the dep.
+
+        Aliases: dependancy, dep
+        """
+
         import importlib
+
         try:
             modul = importlib.import_module(lib)
         except ModuleNotFoundError:
