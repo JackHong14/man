@@ -222,10 +222,10 @@ class AddCli(AddRemCLI):
                 if lib in line:
                     click.echo(line)
 
-            dep = click.prompt('Requirement')
+            version = click.prompt('Requirement')
             lib = ''  # lib is included in dep
 
-        if version and not version.startswith(('==', '>', '<', '!=')):  # ✓
+        elif not version.startswith(('==', '>', '<', '!=')):  # ✓
             version = '==' + version
 
         dep = '%s%s' % (lib, version)
