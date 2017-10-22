@@ -2,6 +2,8 @@ import glob
 import os
 import subprocess
 import sys
+from typing import Dict
+from typing import List
 
 import click
 import configlib
@@ -163,163 +165,8 @@ def copy_template(FORMATERS: ManConfig, dir):
                 f.write(text)
 
 
-@click.group()
-@click.option('--test', is_flag=True)
-@click.version_option(ManConfig().version)
-def man(test):
-    global TEST
-    TEST = test
-
-
-@man.command()
-@click.argument('importance', type=click.Choice(TYPES))
-@click.argument('message', nargs=-1)
-@click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
-@click.option('--again', is_flag=True, help='Do not increase the version but move the release tag to the last commit. Usefull if something failed.')
-@pass_config
-def release(config, importance, message, test, again):
-    """Deploy a project: update version, add tag, and push."""
-
-    global TEST
-    TEST = TEST or test
-
-    # read and parsing the version
-    version = last_version = config.version
-    click.secho('Current version: %s' % version, fg='green')
-    version = list(map(int, version.split('.')))
-
-    def revert_version():
-        config.version = last_version
-
-        click.secho('Version reverted to %s' % config.version, fg='yellow')
-        convert_readme(config)
-
-    if not again:
-        importance = TYPES.index(importance)
-        # we increase major/minor/path as chosen
-        version[importance] += 1
-        # en reset the ones after
-        for i in range(importance + 1, 3):
-            version[i] = 0
-
-    # save the version
-    config.version = '%d.%d.%d' % tuple(version)
-    config.__save__()
-
-    # changing version in the readme +
-    # converting the readme in markdown to the one in rst
-    convert_readme(config)
-
-    # uninstall the previous version because the test imports it :/
-    run('pip uninstall %s --yes' % config.libname)
-
-    # make sure it passes the tests
-    if run('pytest test') != 0:
-        click.secho("The tests doesn't pass.", fg='red')
-        revert_version()
-        return
-
-    # make sure I can install it
-    if run('py setup.py install --user clean --all') != 0:
-        click.secho('Failed to install the updated library.', fg='red')
-        revert_version()
-        return
-
-    # default message if nothing was provided
-    message = ' '.join(message) if message else 'Release of version %s' % config.version
-
-    # we need to commit and push the change of the version number before everything
-    # if we don't, travis will not have the right version and will fail to deploy
-
-    run('git commit -a -m "changing version number"'.format(message=message), test)
-    run('git push origin', test)
-
-    if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
-        # creating a realase with the new version
-        if again:
-            run('git tag v%s -af -m "%s"' % (config.version, message), test)
-            run('git push origin -f --tags', test)
-        else:
-            run('git tag v%s -a -m "%s"' % (config.version, message), test)
-            run('git push origin --tags', test)
-
-        click.secho('Version changed to ' + config.version, fg='green')
-    else:
-        revert_version()
-        return
-
-    if test:
-        # We do not want to increase the version number at each test
-        revert_version()
-
-
-@man.command()
-@pass_config
-def install(config):
-    """Uninstall the last version and add the one in developpement."""
-    run('pip uninstall %s --yes' % config.libname)
-    run('py setup.py install --user')
-
-
-@man.command(context_settings=dict(ignore_unknown_options=True))
-@click.argument('args', nargs=-1)
-def config(args):
-    sys.argv[1:] = args
-    configlib.update_config(ManConfig)
-
-
-@man.command('new')
-@click.argument('dir', default='.')
-@pass_config
-def new_lib(config: ManConfig, dir):
-
-    with GeneralConfig() as general_config:
-        config.libname = click.prompt('Name of your library')
-        config.description = click.prompt('Short description')
-        config.fullname = general_config.fullname = click.prompt('Full name', default=general_config.fullname)
-        config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
-        config.github_username = general_config.github_username = click.prompt("Github username", default=general_config.github_username)
-        config.pypi_username = general_config.pypi_username = click.prompt('PyPi username', default=general_config.pypi_username)
-
-    try:
-        copy_template(config, dir)
-    except Exception as e:
-        print(repr(e))
-        click.echo('Something went wrong.')
-        if click.confirm('Do you want to delete the directory %s' % config.libname):
-            run('rm -rf %s' % config.libname)
-        return
-
-    LIB_DIR = os.path.abspath(os.path.join(dir, config.libname))
-    run('cd %s' % config.libname, True)
-    os.chdir(LIB_DIR)
-    click.echo(os.path.abspath(os.curdir))
-    config.__config_path__ = os.path.join(LIB_DIR, 'manconfig.json')
-
-    # initialize man
-    run('man add pkg %s' % config.libname)
-    run('man add file manconfig.*')
-
-    # initilize git repo
-    run('git init .')
-    run('git add .')
-    run('git commit -m "initial commit"')
-    run(
-        """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
-            **config.__dict__) % (chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
-    run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
-    run('git push origin master')
-
-    whats_next(config)
-
-
-class AddRemCLI(click.MultiCommand):
-    aliases = {
-        'file': ['file', 'f'],
-        'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
-        'pkg': ['pkg', 'package'],
-        'dependancy': ['dependancy', 'dep']
-    }
+class AliasCLI(click.MultiCommand):
+    aliases = {}  # type: Dict[str, List[str]]
 
     def list_commands(self, ctx):
         return sorted([aliases[0] for aliases in self.aliases.values()])
@@ -328,6 +175,15 @@ class AddRemCLI(click.MultiCommand):
         for cmd_name, aliases in self.aliases.items():
             if name in aliases:
                 return getattr(self, cmd_name)
+
+
+class AddRemCLI(AliasCLI):
+    aliases = {
+        'file': ['file', 'f'],
+        'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
+        'pkg': ['pkg', 'package'],
+        'dependancy': ['dependancy', 'dep']
+    }
 
 
 class AddCli(AddRemCLI):
@@ -500,14 +356,187 @@ class RemoveCLI(AddRemCLI):
     ...
 
 
-@man.command(cls=AddCli)
-def add():
-    """Add something to your project."""
+class ManCLi(AliasCLI):
+    aliases = {
+        'release': ['release', 'rel'],
+        'install': ['install'],
+        "config": ['config', 'conf'],
+        'new_lib': ['new', 'create', 'new-lib'],
+        'add': ['add'],
+        'remove': ['remove', 'rem', 'delete', 'del']
+    }
+
+    @click.command()
+    @click.argument('importance', type=click.Choice(TYPES))
+    @click.argument('message', nargs=-1)
+    @click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
+    @click.option('--again', is_flag=True,
+                  help='Do not increase the version but move the release tag to the last commit. Usefull if something failed.')
+    @pass_config
+    @staticmethod
+    def release(config, importance, message, test, again):
+        """Deploy a project: update version, add tag, and push."""
+
+        global TEST
+        TEST = TEST or test
+
+        # read and parsing the version
+        version = last_version = config.version
+        click.secho('Current version: %s' % version, fg='green')
+        version = list(map(int, version.split('.')))
+
+        def revert_version():
+            config.version = last_version
+
+            click.secho('Version reverted to %s' % config.version, fg='yellow')
+            convert_readme(config)
+
+        if not again:
+            importance = TYPES.index(importance)
+            # we increase major/minor/path as chosen
+            version[importance] += 1
+            # en reset the ones after
+            for i in range(importance + 1, 3):
+                version[i] = 0
+
+        # save the version
+        config.version = '%d.%d.%d' % tuple(version)
+        config.__save__()
+
+        # changing version in the readme +
+        # converting the readme in markdown to the one in rst
+        convert_readme(config)
+
+        # uninstall the previous version because the test imports it :/
+        run('pip uninstall %s --yes' % config.libname)
+
+        # make sure it passes the tests
+        if run('pytest test') != 0:
+            click.secho("The tests doesn't pass.", fg='red')
+            revert_version()
+            return
+
+        # make sure I can install it
+        if run('py setup.py install --user clean --all') != 0:
+            click.secho('Failed to install the updated library.', fg='red')
+            revert_version()
+            return
+
+        # default message if nothing was provided
+        message = ' '.join(message) if message else 'Release of version %s' % config.version
+
+        # we need to commit and push the change of the version number before everything
+        # if we don't, travis will not have the right version and will fail to deploy
+
+        run('git commit -a -m "changing version number"'.format(message=message), test)
+        run('git push origin', test)
+
+        if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
+            # creating a realase with the new version
+            if again:
+                run('git tag v%s -af -m "%s"' % (config.version, message), test)
+                run('git push origin -f --tags', test)
+            else:
+                run('git tag v%s -a -m "%s"' % (config.version, message), test)
+                run('git push origin --tags', test)
+
+            click.secho('Version changed to ' + config.version, fg='green')
+        else:
+            revert_version()
+            return
+
+        if test:
+            # We do not want to increase the version number at each test
+            revert_version()
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def install(config: ManConfig):
+        """Uninstall the last version and add the one in developpement."""
+
+        run('pip uninstall %s --yes' % config.libname)
+        run('py setup.py install --user')
+
+    @click.command(context_settings=dict(ignore_unknown_options=True))
+    @click.argument('args', nargs=-1)
+    @staticmethod
+    def config(args):
+        """Update the configuration for the given project."""
+
+        sys.argv[1:] = args
+        configlib.update_config(ManConfig)
+
+    @click.command()
+    @click.argument('dir', default='.')
+    @pass_config
+    @staticmethod
+    def new_lib(config: ManConfig, dir):
+
+        with GeneralConfig() as general_config:
+            config.libname = click.prompt('Name of your library')
+            config.description = click.prompt('Short description')
+            config.fullname = general_config.fullname = click.prompt('Full name', default=general_config.fullname)
+            config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
+            config.github_username = general_config.github_username = click.prompt("Github username",
+                                                                                   default=general_config.github_username)
+            config.pypi_username = general_config.pypi_username = click.prompt('PyPi username',
+                                                                               default=general_config.pypi_username)
+
+        try:
+            copy_template(config, dir)
+        except Exception as e:
+            print(repr(e))
+            click.echo('Something went wrong.')
+            if click.confirm('Do you want to delete the directory %s' % config.libname):
+                run('rm -rf %s' % config.libname)
+            return
+
+        LIB_DIR = os.path.abspath(os.path.join(dir, config.libname))
+        run('cd %s' % config.libname, True)
+        os.chdir(LIB_DIR)
+        click.echo(os.path.abspath(os.curdir))
+        config.__config_path__ = os.path.join(LIB_DIR, 'manconfig.json')
+
+        # initialize man
+        run('man add pkg %s' % config.libname)
+        run('man add file manconfig.*')
+
+        # initilize git repo
+        run('git init .')
+        run('git add .')
+        run('git commit -m "initial commit"')
+        run(
+            """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
+                **config.__dict__) % (
+            chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
+        run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
+        run('git push origin master')
+
+        whats_next(config)
+
+    # sub groups
+
+    @click.command(cls=AddCli)
+    @staticmethod
+    def add():
+        """Add something to your project."""
+
+    @click.command(cls=RemoveCLI)
+    @staticmethod
+    def remove():
+        """Remove something from your project."""
 
 
-@man.command(cls=RemoveCLI)
-def remove():
-    """Remove something from your project."""
+
+
+
+@click.command(cls=ManCLi)
+@click.option('--test', is_flag=True)
+@click.version_option(ManConfig().version)
+def man(test):
+    global TEST
+    TEST = test
 
 
 if __name__ == '__main__':
