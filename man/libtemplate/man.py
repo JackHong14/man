@@ -127,7 +127,7 @@ def man(test):
 @click.argument('importance', type=click.Choice(TYPES))
 @click.argument('message', nargs=-1)
 @click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
-@click.option('--again', is_flag=True, help='Do not increse the version but move the release tag to the last commit. Usefull if something failed.')
+@click.option('--again', is_flag=True, help='Do not increase the version but move the release tag to the last commit. Usefull if something failed.')
 @pass_config
 def release(config, importance, message, test, again):
     """Deploy a project: update version, add tag, and push."""
