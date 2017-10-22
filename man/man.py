@@ -14,17 +14,34 @@ TEST = False
 
 
 def staticmethod(func):
+    """We just override it so no IDE thinks the functions of the Cmd classes are called with self, because they are never."""
     return func
 
 def pass_config(func):
+    """
+    Pass the curent config the the function (1st parameter).
+
+    This automatically saves it after the function even if there is an exception
+    """
     def inner(*args, **kwargs):
         with ManConfig() as config:
             return func(config, *args, **kwargs)
+    # We need to update those otherwise click thinks the function is called 'inner'
+    # and it will be the only thing you will be able to run and the docs will be gone
     inner.__name__ = func.__name__
     inner.__doc__ = func.__doc__
     return inner
 
 def run(cmd: str, test=False):
+    """
+    Create a process to run a given command.
+
+    This prints nicely the command run too.
+    If test is True, this only print the command, without executing it.
+    :return int: The exit code of the command
+    """
+
+    # Print the command with nice colors
     click.secho('$ ', fg='green', bold=1, nl=0)
     click.secho(cmd, fg='cyan', bold=1)
 
@@ -38,13 +55,13 @@ def run(cmd: str, test=False):
     return 0
 
 def convert_readme(config=None):
+    """Converts readme.md to README.rst. If config is provided, update the version accordingly."""
 
     if config:
         with open('readme.md') as f:
             readme = f.readlines()
-        readme[
-            0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=v%s)](https://travis-ci.org/{github_username}/{libname})\n'.format(
-            **config.__dict__) % config.version
+        readme[0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=v%s)]' \
+                    '(https://travis-ci.org/{github_username}/{libname})\n'.format(**config.__dict__) % config.version
         with open('readme.md', 'w') as f:
             f.writelines(readme)
 
@@ -53,24 +70,27 @@ def convert_readme(config=None):
     except OSError:
         pypandoc.download_pandoc()
         rst = pypandoc.convert_file('readme.md', 'rst')
+
     # pandoc put a lot of carriage return at the end, and we don't want them
     rst = rst.replace('\r', '')
+
     # save the converted readme
-    with open('readme.rst', 'w') as f:
+    with open('README.rst', 'w') as f:
         f.write(rst)
+
     click.echo('Readme converted.')
 
 def whats_next(FORMATERS: ManConfig):
     import functools
-    s = click.style
-    code = functools.partial(s, fg='green')
-    link = functools.partial(s, fg='yellow', underline=True)
+
+    code = functools.partial(click.style, fg='green')
+    link = functools.partial(click.style, fg='yellow', underline=True)
     bullet = lambda i: '    ' * i + '- '
 
     click.echo('\n' * 2)
 
     text = [
-        s("You are almost done !", fg='cyan', bold=True),
+        click.style("You are almost done !", fg='cyan', bold=True),
         '',
         'Here are the few steps that you still need to do:',
         bullet(1) + 'Add your encrypted password for pypi to .travis.yml. For that:',
@@ -92,16 +112,19 @@ def whats_next(FORMATERS: ManConfig):
         ''
     ]
 
+    # center aproxivematively (because of escape chars) the first line
     text[0] = text[0].center(len(max(text, key=len)))
 
     for line in text:
         click.echo(line)
 
-    if click.confirm('Do you want to open travis in you browser ?', default=True):
+    if click.confirm('\nDo you want to open travis in you browser ?', default=True):
         import webbrowser
         webbrowser.open('https://travis-ci.org/profile/%s' % FORMATERS.github_username)
 
 def copy_template(FORMATERS: ManConfig, dir):
+    """Copies the libtemplate to create a new lib at dir"""
+
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
     LIB_DIR = os.path.abspath(os.path.join(dir, FORMATERS.libname))
