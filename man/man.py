@@ -24,20 +24,24 @@ def staticmethod(func):
     """We just override it so no IDE thinks the functions of the Cmd classes are called with self, because they are never."""
     return func
 
+
 def pass_config(func):
     """
     Pass the curent config the the function (1st parameter).
 
     This automatically saves it after the function even if there is an exception
     """
+
     def inner(*args, **kwargs):
         with ManConfig() as config:
             return func(config, *args, **kwargs)
+
     # We need to update those otherwise click thinks the function is called 'inner'
     # and it will be the only thing you will be able to run and the docs will be gone
     inner.__name__ = func.__name__
     inner.__doc__ = func.__doc__
     return inner
+
 
 def run(cmd: str, test=False):
     """
@@ -60,6 +64,7 @@ def run(cmd: str, test=False):
         out, err = process.communicate()
         return process.returncode
     return 0
+
 
 def convert_readme(config=None):
     """Converts readme.md to README.rst. If config is provided, update the version accordingly."""
@@ -87,6 +92,7 @@ def convert_readme(config=None):
 
     click.echo('Readme converted.')
 
+
 def whats_next(FORMATERS: ManConfig):
     import functools
 
@@ -101,20 +107,20 @@ def whats_next(FORMATERS: ManConfig):
         '',
         'Here are the few steps that you still need to do:',
         bullet(1) + 'Add your encrypted password for pypi to .travis.yml. For that:',
-            bullet(2) + 'Open ' + code('bash', fg='green'),
-            bullet(2) + 'Run ' + code('travis encrypt --add deploy.password'),
+        bullet(2) + 'Open ' + code('bash', fg='green'),
+        bullet(2) + 'Run ' + code('travis encrypt --add deploy.password'),
         bullet(1) + 'Activate the continuous integration for this repo in Travis:',
-            bullet(2) + 'Open ' + link('https://travis-ci.org/profile/%s' % FORMATERS.github_username),
-            bullet(2) + 'Switch %s/%s to on' % (FORMATERS.github_username, FORMATERS.libname),
+        bullet(2) + 'Open ' + link('https://travis-ci.org/profile/%s' % FORMATERS.github_username),
+        bullet(2) + 'Switch %s/%s to on' % (FORMATERS.github_username, FORMATERS.libname),
         bullet(1) + 'Write some code',
         bullet(1) + 'Add the dependancies:',
-            bullet(2) + 'Run ' + code('man add dep pyconfiglib 1.*'),
-            bullet(2) + 'Run ' + code('man add click'),
+        bullet(2) + 'Run ' + code('man add dep pyconfiglib 1.*'),
+        bullet(2) + 'Run ' + code('man add click'),
         bullet(1) + 'Create your first release:',
-            bullet(2) + 'With ' + code('man release major'),
+        bullet(2) + 'With ' + code('man release major'),
         bullet(1) + 'Read more about ' + code('man') + ' to manage your project after the creation:',
-            bullet(2) + 'Run ' + code('man --help'),
-            bullet(2) + 'Read ' + link('https://github.com/ddorn/man'),
+        bullet(2) + 'Run ' + code('man --help'),
+        bullet(2) + 'Read ' + link('https://github.com/ddorn/man'),
         '',
         ''
     ]
@@ -128,6 +134,7 @@ def whats_next(FORMATERS: ManConfig):
     if click.confirm('\nDo you want to open travis in you browser ?', default=True):
         import webbrowser
         webbrowser.open('https://travis-ci.org/profile/%s' % FORMATERS.github_username)
+
 
 def copy_template(FORMATERS: ManConfig, dir):
     """Copies the libtemplate to create a new lib at dir"""
@@ -510,7 +517,7 @@ class ManCLi(AliasCLI):
         run(
             """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
                 **config.__dict__) % (
-            chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
+                chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
         run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
         run('git push origin master')
 
@@ -527,9 +534,6 @@ class ManCLi(AliasCLI):
     @staticmethod
     def remove():
         """Remove something from your project."""
-
-
-
 
 
 @click.command(cls=ManCLi)
