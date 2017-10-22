@@ -3,8 +3,6 @@ import os
 
 from setuptools import setup
 
-VERSION_FILE = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'man', 'version')
-
 
 if __name__ == '__main__':
 
