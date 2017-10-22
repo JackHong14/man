@@ -19,6 +19,7 @@ class ManConfig(configlib.Config):
     email = ''
     pypi_username = ''
     version = '0.0.0'
+    description = ''
 
     package_data = dict()
     __package_data_type__ = configlib.Python(dict)
