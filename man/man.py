@@ -382,7 +382,16 @@ class ManCLi(AliasCLI):
     @pass_config
     @staticmethod
     def release(config, importance, message, test, again):
-        """Deploy a project: update version, add tag, and push."""
+        """
+        Create a new release.
+
+        This increments the version depending on the IMPORTANCE and add a git tag
+        to create a new release. Use --again if you want to keep the same version
+        juste updating it. Note that it won't be uploaded again to PyPi if it was
+        already. Use this when the build was broken and you want to try again but
+        with some changes in your code. The MESSAGE specifies the name of the new
+        release.
+        """
 
         global TEST
         TEST = TEST or test
@@ -460,7 +469,12 @@ class ManCLi(AliasCLI):
     @pass_config
     @staticmethod
     def install(config: ManConfig):
-        """Replace the last version by the current one."""
+        """
+        Replace the last version by the current one.
+
+        This removes the previously installed version and then install the version
+        that you are developping.
+        """
 
         run('pip uninstall %s --yes' % config.libname)
         run('py setup.py install --user')
@@ -537,7 +551,7 @@ class ManCLi(AliasCLI):
 
 
 @click.command(cls=ManCLi)
-@click.option('--test', is_flag=True)
+@click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
 @click.version_option(ManConfig().version)
 def man(test):
     global TEST
