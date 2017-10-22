@@ -313,7 +313,7 @@ def new_lib(config: ManConfig, dir):
     whats_next(config)
 
 
-class MyCLI(click.MultiCommand):
+class AddRemCLI(click.MultiCommand):
     aliases = {
         'file': ['file', 'f'],
         'pkgdata': ['pkg-data', 'pkgdata', 'data', 'pd'],
@@ -330,7 +330,7 @@ class MyCLI(click.MultiCommand):
                 return getattr(self, cmd_name)
 
 
-class AddCli(MyCLI):
+class AddCli(AddRemCLI):
     @click.command()
     @click.argument('lib')
     @click.argument('version', default='')
@@ -496,7 +496,7 @@ class AddCli(MyCLI):
         click.secho('The package %s was added to the package list.' % pkg_name, fg='green')
 
 
-class RemoveCLI(MyCLI):
+class RemoveCLI(AddRemCLI):
     ...
 
 
