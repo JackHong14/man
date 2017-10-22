@@ -272,12 +272,13 @@ def config(args):
 @pass_config
 def new_lib(config, dir):
 
-    config.libname = click.prompt('Name of your library')
-    config.description = click.prompt('Short description')
-    config.fullname = click.prompt('Full name', default=config.fullname)
-    config.email = click.prompt('E-Mail', default=config.email)
-    config.github_username = click.prompt("Github username", default=config.github_username)
-    config.pypi_username = click.prompt('PyPi username', default=config.pypi_username)
+    with GeneralConfig() as general_config:
+        config.libname = click.prompt('Name of your library')
+        config.description = click.prompt('Short description')
+        config.fullname = general_config.fullname = click.prompt('Full name', default=general_config.fullname)
+        config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
+        config.github_username = general_config.github_username = click.prompt("Github username", default=general_config.github_username)
+        config.pypi_username = general_config.pypi_username = click.prompt('PyPi username', default=general_config.pypi_username)
 
     try:
         copy_template(config, dir)
