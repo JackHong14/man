@@ -2,6 +2,13 @@ import configlib
 import os
 
 
+def save_version(config, major, minor, patch):
+    with config:
+        config.version = '%d.%d.%d' % (major, minor, patch)
+
+
+
+
 class Config(configlib.Config):
     __config_path__ = os.path.join(os.path.dirname(__file__), 'manconfig.json')
 
@@ -10,6 +17,7 @@ class Config(configlib.Config):
     fullname = ''
     email = ''
     pypi_username = ''
+    version = '0.0.0'
 
     package_data = dict()
     __package_data_type__ = configlib.Python(dict)

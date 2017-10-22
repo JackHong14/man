@@ -10,6 +10,7 @@ class Config(configlib.Config):
     fullname = ''
     email = ''
     pypi_username = ''
+    version = ''
 
     package_data = dict()
     __package_data_type__ = configlib.Python(dict)

@@ -7,7 +7,6 @@ import click
 import configlib
 import pypandoc
 
-from setup import get_version, save_version
 from manconfig import Config
 
 TYPES = ['major', 'minor', 'patch']
@@ -38,6 +37,28 @@ def run(cmd: str, test=False):
         return process.returncode
     return 0
 
+def convert_readme(config=None):
+
+    if config:
+        with open('readme.md') as f:
+            readme = f.readlines()
+        readme[
+            0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=v%s)](https://travis-ci.org/{github_username}/{libname})\n'.format(
+            **config.__dict__) % config.version
+        with open('readme.md', 'w') as f:
+            f.writelines(readme)
+
+    try:
+        rst = pypandoc.convert_file('readme.md', 'rst')
+    except OSError:
+        pypandoc.download_pandoc()
+        rst = pypandoc.convert_file('readme.md', 'rst')
+    # pandoc put a lot of carriage return at the end, and we don't want them
+    rst = rst.replace('\r', '')
+    # save the converted readme
+    with open('readme.rst', 'w') as f:
+        f.write(rst)
+    click.echo('Readme converted.')
 
 def whats_next(FORMATERS: Config):
     import functools
@@ -80,7 +101,6 @@ def whats_next(FORMATERS: Config):
         import webbrowser
         webbrowser.open('https://travis-ci.org/profile/%s' % FORMATERS.github_username)
 
-
 def copy_template(FORMATERS: Config, dir):
     DIR = os.path.abspath(os.path.dirname(__file__))
     LIBTEMPLATE_DIR = os.path.join(DIR, 'libtemplate')
@@ -117,7 +137,7 @@ def copy_template(FORMATERS: Config, dir):
 
 @click.group()
 @click.option('--test', is_flag=True)
-@click.version_option(get_version())
+@click.version_option(Config().version)
 def man(test):
     global TEST
     TEST = test
@@ -136,14 +156,15 @@ def release(config, importance, message, test, again):
     TEST = TEST or test
 
     # read and parsing the version
-    version = get_version()
+    version = last_version = config.version
     click.secho('Current version: %s' % version, fg='green')
     version = list(map(int, version.split('.')))
-    last_version = version[:]
 
     def revert_version():
-        save_version(*last_version)
-        click.secho('Version reverted to %s' % get_version(), fg='yellow')
+        config.version = last_version
+
+        click.secho('Version reverted to %s' % config.version, fg='yellow')
+        convert_readme(config)
 
     if not again:
         importance = TYPES.index(importance)
@@ -154,20 +175,11 @@ def release(config, importance, message, test, again):
             version[i] = 0
 
     # save the version
-    save_version(*version)
+    config.version = '.'.join(*version)
 
+    # changing version in the readme +
     # converting the readme in markdown to the one in rst
-    try:
-        rst = pypandoc.convert_file('readme.md', 'rst')
-    except OSError:
-        pypandoc.download_pandoc()
-        rst = pypandoc.convert_file('readme.md', 'rst')
-    # pandoc put a lot of carriage return at the end, and we don't want them
-    rst = rst.replace('\r', '')
-    # save the converted readme
-    with open('readme.rst', 'w') as f:
-        f.write(rst)
-    click.echo('Readme converted.')
+    convert_readme(config)
 
     # uninstall the previous version because the test imports it :/
     run('pip uninstall %s --yes' % config.libname)
@@ -184,10 +196,8 @@ def release(config, importance, message, test, again):
         revert_version()
         return
 
-    version = get_version()
-
     # default message if nothing was provided
-    message = ' '.join(message) if message else 'Release of version %s' % version
+    message = ' '.join(message) if message else 'Release of version %s' % config.version
 
     # we need to commit and push the change of the version number before everything
     # if we don't, travis will not have the right version and will fail to deploy
@@ -195,16 +205,16 @@ def release(config, importance, message, test, again):
     run('git commit -a -m "changing version number"'.format(message=message), test)
     run('git push origin', test)
 
-    if click.confirm('Are you sure you want to create a new release (v%s)?' % version):
+    if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
         # creating a realase with the new version
         if again:
-            run('git tag v%s -af -m "%s"' % (version, message), test)
+            run('git tag v%s -af -m "%s"' % (config.version, message), test)
             run('git push origin -f --tags', test)
         else:
-            run('git tag v%s -a -m "%s"' % (version, message), test)
+            run('git tag v%s -a -m "%s"' % (config.version, message), test)
             run('git push origin --tags', test)
 
-        click.secho('Version changed to ' + version, fg='green')
+        click.secho('Version changed to ' + config.version, fg='green')
     else:
         revert_version()
         return
