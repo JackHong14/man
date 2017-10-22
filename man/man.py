@@ -431,7 +431,8 @@ class AddCli(MyCLI):
     @click.command()
     @click.argument('pkg-dir')
     @staticmethod
-    def pkg(pkg_dir: str):
+    @pass_config
+    def pkg(config, pkg_dir: str):
         """
         Registers a package.
 
