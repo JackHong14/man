@@ -7,7 +7,7 @@ import click
 import configlib
 import pypandoc
 
-from .manconfig import ManConfig
+from manconfig import ManConfig
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
@@ -254,10 +254,10 @@ def config(args):
     configlib.update_config(ManConfig)
 
 
-@man.command()
+@man.command('new')
 @click.argument('dir', default='.')
 @pass_config
-def new_lib(dir):
+def new_lib(config, dir):
 
     config.libname = click.prompt('Name of your library')
     config.description = click.prompt('Short description')
