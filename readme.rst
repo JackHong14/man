@@ -5,5 +5,5 @@ man
 
 Project manager for pypi libraries
 
-.. |Build Status| image:: https://travis-ci.org/ddorn/man.svg?branch=v0.2.4
+.. |Build Status| image:: https://travis-ci.org/ddorn/man.svg?branch=v0.3.0
    :target: https://travis-ci.org/ddorn/man
