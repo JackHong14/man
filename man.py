@@ -14,7 +14,7 @@ TEST = False
 
 
 class Config(configlib.Config):
-    __config_path__ = os.path.join(os.path.dirname(__file__), 'config.json')
+    __config_path__ = os.path.join(os.path.dirname(__file__), 'manconfig.json')
 
     libname = ''
     github_username = ''
@@ -218,6 +218,14 @@ def release(importance, message, test):
     if test:
         # We do not want to increase the version number at each test
         revert_version()
+
+
+@man.command()
+@click.argument('args', nargs=-1)
+def config(args):
+    sys.argv[1:] = args
+    configlib.update_config(Config)
+    CONFIG.__load__()
 
 
 @man.command()
