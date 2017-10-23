@@ -8,7 +8,7 @@ class GeneralConfig(configlib.Config):
     It help to provides defaults.
     """
 
-    __config_path__ = os.path.abspath(os.path.join(os.path.dirname(__file__), 'generalconfig.json'))
+    __config_path__ = os.path.expanduser('~/generalconfig.json')
 
     github_username = ''
     fullname = ''
