@@ -465,6 +465,7 @@ class ManCLi(AliasCLI):
 
         # default message if nothing was provided
         short_message = 'Release of version %s' % config.version
+        click.echo(message, color='blue')
         if not message:
             run('git log %s..HEAD' % last_version)
             message = input()
