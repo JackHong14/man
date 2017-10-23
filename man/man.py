@@ -56,7 +56,7 @@ def run(cmd: str, test=False, output=False):
     click.secho(cmd, fg='cyan', bold=1)
 
     if cmd.startswith('man '):
-        cmd = cmd.replace('man', 'python ' + __file__, 1)
+        cmd = cmd.replace('man', 'python "%s"' % __file__, 1)
 
     if not test:
         if output:
