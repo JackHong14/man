@@ -544,18 +544,15 @@ class ManCLi(AliasCLI):
         click.echo(os.path.abspath(os.curdir))
         config.__config_path__ = os.path.join(LIB_DIR, 'manconfig.json')
 
-        # initialize man
+        # Add
         run('man add pkg %s' % config.libname)
-        run('man add file manconfig.*')
 
         # initilize git repo
         run('git init .')
         run('git add .')
         run('git commit -m "initial commit"')
-        run(
-            """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
-                **config.__dict__) % (
-                chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly braquest
+        run("""curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
+                **config.__dict__) % (chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly brackets
         run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
         run('git push origin master')
 
