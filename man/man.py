@@ -468,7 +468,7 @@ class ManCLi(AliasCLI):
         # we need to commit and push the change of the version number before everything
         # if we don't, travis will not have the right version and will fail to deploy
 
-        run('git commit -a -m "changing version number"'.format(message=message), test)
+        run('git commit -a -m "%s"' % message, test)
         run('git push origin', test)
 
         if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
