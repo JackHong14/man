@@ -464,12 +464,15 @@ class ManCLi(AliasCLI):
         #     return
 
         # default message if nothing was provided
-        message = ' '.join(message) if message else 'Release of version %s' % config.version
+        short_message = 'Release of version %s' % config.version
+        if not message:
+            run('git log %s..HEAD' % last_version)
+            message = input()
 
         # we need to commit and push the change of the version number before everything
         # if we don't, travis will not have the right version and will fail to deploy
 
-        run('git commit -a -m "%s"' % message, test)
+        run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
         run('git push origin', test)
 
         if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
