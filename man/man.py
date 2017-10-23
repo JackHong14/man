@@ -451,7 +451,7 @@ class ManCLi(AliasCLI):
         # run('pip uninstall %s --yes' % config.libname)
 
         # make sure it passes the tests
-        if run('pytest test') != 0:
+        if run('pytest test --quiet') != 0:
             click.secho("The tests doesn't pass.", fg='red')
             revert_version()
             return
