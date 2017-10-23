@@ -399,13 +399,12 @@ class ManCLi(AliasCLI):
 
     @click.command()
     @click.argument('importance', type=click.Choice(TYPES))
-    @click.argument('message', nargs=-1)
     @click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
     @click.option('--again', is_flag=True,
                   help='Do not increase the version but move the release tag to the last commit. Usefull if something failed.')
     @pass_config
     @staticmethod
-    def release(config, importance, message, test, again):
+    def release(config, importance, test, again):
         """
         Create a new release.
 
@@ -463,12 +462,18 @@ class ManCLi(AliasCLI):
         #     revert_version()
         #     return
 
-        # default message if nothing was provided
+
+        click.echo('Commits since last version:')
+        run('git log v%s..HEAD --oneline' % last_version)
+        click.echo("Describe what's in this release:")
+        # message = []
+        # last_line = 'sentinel'
+        # while last_line:
+        #     last_line = input('  ')
+        #     message.append(last_line)
+        # message = '\n'.join(message)
+        message = '\n'.join(iter(lambda: input('  '), ''))
         short_message = 'Release of version %s' % config.version
-        click.echo(message, color='blue')
-        if not message:
-            run('git log %s..HEAD' % last_version)
-            message = input()
 
         # we need to commit and push the change of the version number before everything
         # if we don't, travis will not have the right version and will fail to deploy
