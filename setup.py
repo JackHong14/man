@@ -26,9 +26,10 @@ if __name__ == '__main__':
         description='Project manager for pypi libraries',
         long_description=long_description,
         install_requires=config.dependancies,
-        package_data={pkg: list(set(file for pat in paterns for file in glob.glob(os.path.join(pkg, pat), recursive=True))) for (pkg, paterns) in config.package_data.items()},
-        data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern, recursive=True)))) for (dir, pats) in config.data_files],
+        # package_data={pkg: list(set(file for pat in paterns for file in glob.glob(os.path.join(pkg, pat), recursive=True))) for (pkg, paterns) in config.package_data.items()},
+        # data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern, recursive=True)))) for (dir, pats) in config.data_files],
         entry_points={
             'console_scripts': ['man=man.man:man']
-        }
+        },
+        include_package_data=True
     )
