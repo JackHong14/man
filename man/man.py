@@ -457,7 +457,7 @@ class ManCLi(AliasCLI):
             return
 
         # make sure I can install it
-        if run('py setup.py install --user clean --all') != 0:
+        if run('pip install .') != 0:
             click.secho('Failed to install the updated library.', fg='red')
             revert_version()
             return
