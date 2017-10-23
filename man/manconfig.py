@@ -3,7 +3,13 @@ import configlib
 
 
 class Version:
+    """
+    This class describes and manipulate a version number of the form MAJOR.MINOR.PATCH
 
+    When you want to manipulate a version, it is better to do it with a context manager
+    and set version.need_revert = False before exiting the context manager so it will
+    change the version only if your program had no errors.
+    """
     MAJOR = 0
     MINOR = 1
     PATCH = 2
