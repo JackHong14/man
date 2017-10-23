@@ -152,7 +152,11 @@ def copy_template(FORMATERS: ManConfig, dir):
     # copy all the lib template formating with the given data
     for directory, subdirs, files in os.walk(LIBTEMPLATE_DIR):
 
-        dest_directory = directory[len(LIBTEMPLATE_DIR) + 1:].format(**FORMATERS.__dict__)
+        # remove the begining
+        dest_directory = os.path.relpath(directory, LIBTEMPLATE_DIR)
+        # format the name
+        dest_directory = dest_directory.format(**FORMATERS.__dict__)
+        # and replace the begining by the dest loc
         dest_directory = os.path.join(LIB_DIR, dest_directory)
 
         click.secho('Creating directory %s' % dest_directory, fg='yellow')
