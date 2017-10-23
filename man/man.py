@@ -7,7 +7,6 @@ from typing import List
 
 import click
 import configlib
-import pypandoc
 
 try:
     from manconfig import ManConfig
@@ -73,6 +72,8 @@ def run(cmd: str, test=False, output=False):
 
 def convert_readme(config=None):
     """Converts readme.md to README.rst. If config is provided, update the version accordingly."""
+
+    import pypandoc
 
     if config:
         with open('readme.md') as f:
