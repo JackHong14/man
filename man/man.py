@@ -2,8 +2,8 @@ import glob
 import os
 import subprocess
 import sys
-from typing import Dict
-from typing import List
+from typing import Dict, List
+import shlex
 
 import click
 import configlib
@@ -56,7 +56,9 @@ def run(cmd: str, test=False, output=False):
     click.secho(cmd, fg='cyan', bold=1)
 
     if cmd.startswith('man '):
-        cmd = cmd.replace('man', 'python "%s"' % __file__, 1)
+        ctx = man.make_context('man', shlex.split(cmd)[1:])
+        with ctx:
+            return man.invoke(ctx)
 
     if not test:
         if output:
