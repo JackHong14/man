@@ -152,6 +152,9 @@ def copy_template(FORMATERS: ManConfig, dir):
     # copy all the lib template formating with the given data
     for directory, subdirs, files in os.walk(LIBTEMPLATE_DIR):
 
+        if '__pycache__' in directory:
+            continue
+
         # remove the begining
         dest_directory = os.path.relpath(directory, LIBTEMPLATE_DIR)
         # format the name
