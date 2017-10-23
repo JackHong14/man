@@ -1,11 +1,11 @@
 language: python
 python:
-  - '3.6'
+- '3.6'
 script:
-  - pytest test
+- pytest test
 install:
-  - pip install click
-  - pip install -r requirements.txt
+- pip install click
+- pip install -r requirements.txt
 deploy:
   provider: pypi
   user: ddorn
@@ -14,3 +14,6 @@ deploy:
   on:
     condition: $TRAVIS_PYTHON_VERSION = "3.6"
     tags: true
+notifications:
+  slack:
+    secure: Wa2iQMPDWstmis6+C8xD0LiWdTSM36syzbxTLCc8dnADgQJRS6rS5nXvytvYtdT7E2jBGYq/uo7Xgog6Oqyq1VSfmmtjg2g0JVfULD2LXaYnAiq1U541dRMnQq5MdE/3Qi6bSs/Eqlwn1duVCCoT8KOnD6HoKdSvu16xaeGQINX3qKut5UMRb7GI/EYlt4948PMsrdiiTiWX4yC9yGUdYloAx9a5xlE6TNHB8jmc2MX4ASwyJhz7CStwzRmF3AXKgzq8+CSN6h1CYTma+0l/Lwf7mFCkCXGwkfrTYga5kZSKsYN3pzIbX7jbDizieteNnuIfuqJrJhNb0QB7vCPoHuwJDCFygBzjeDImWZuxi4lVdFfWwSQq3j/0VoOyJhW6p0XcbxQNLLL7An6dVeXMxQX7qMQynNchfFJ7tDUwcQej2f96kdi8OIo8ERzQ2xctBtP1d7hCV9JE/anbssW5KvzRYygTKOLHEAlr4Nsw4HRYaP1PTGFYDAr9hro+Y0FIivDp6P/lEhCxuHd4b8yI2CS8RL4GjH3+fDplW6252KP5wzkVIEZ7y9B9eSYfuB3SBeX7r5scFLGxIVaqadp+e2wFLlI7UYM3lsXPwZg5y7eypGRsbTP8qLjw4XsOA1ZAXH9+ZhxVtWXlgRXocmEibzgjuzYOgbzfgYlWcNMthbY=
