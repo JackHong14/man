@@ -1,1 +1,2 @@
 pyconfiglib==1.*
+pypandoc
