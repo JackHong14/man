@@ -444,6 +444,8 @@ class ManCLi(AliasCLI):
                     else:
                         convert_readme(config)
                         run('git commit -a -m "Canceled release"')
+                else:
+                    convert_readme(config)
 
             version.revert_version = revert_version
 
