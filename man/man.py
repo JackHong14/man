@@ -9,10 +9,10 @@ import click
 import configlib
 
 try:
-    from manconfig import ManConfig
+    from manconfig import ManConfig, Version
     from mangeneralconfig import GeneralConfig
 except ImportError:
-    from .manconfig import ManConfig
+    from .manconfig import ManConfig, Version
     from .mangeneralconfig import GeneralConfig
 
 TYPES = ['major', 'minor', 'patch']
@@ -80,7 +80,7 @@ def convert_readme(config=None):
     if config:
         with open('readme.md') as f:
             readme = f.readlines()
-        readme[0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=v%s)]' \
+        readme[0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=%s)]' \
                     '(https://travis-ci.org/{github_username}/{libname})\n'.format(**config.__dict__) % config.version
         with open('readme.md', 'w') as f:
             f.writelines(readme)
@@ -420,84 +420,60 @@ class ManCLi(AliasCLI):
         TEST = TEST or test
 
         # read and parsing the version
-        version = last_version = config.version
-        click.secho('Current version: %s' % version, fg='green')
-        version = list(map(int, version.split('.')))
+        with config.version as version:
+            last_version  = str(version)
+            click.secho('Current version: %s' % version, fg='green')
 
-        def revert_version():
-            config.version = last_version
+            def revert_version():
+                click.secho('Version reverted to %s' % version, fg='yellow')
+                convert_readme(config)
+            version.revert_version = revert_version
 
-            click.secho('Version reverted to %s' % config.version, fg='yellow')
+            if not again:
+                # we increase major/minor/path as chosen
+                # and reset the ones after
+                version[importance] += 1
+
+            # changing version in the readme +
+            # converting the readme in markdown to the one in rst
             convert_readme(config)
 
-        if not again:
-            importance = TYPES.index(importance)
-            # we increase major/minor/path as chosen
-            version[importance] += 1
-            # en reset the ones after
-            for i in range(importance + 1, 3):
-                version[i] = 0
+            # make sure it passes the tests
+            if run('pytest test --quiet') != 0:
+                click.secho("The tests doesn't pass.", fg='red')
+                return
 
-        # save the version
-        config.version = '%d.%d.%d' % tuple(version)
-        config.__save__()
+            click.echo('Commits since last version:')
+            run('git log %s..HEAD --oneline' % last_version)
 
-        # changing version in the readme +
-        # converting the readme in markdown to the one in rst
-        convert_readme(config)
+            click.echo("Describe what's in this release:")
+            message = '\n'.join(iter(lambda: input('  '), ''))
+            short_message = 'Release of version %r' % config.version
 
-        # uninstall the previous version because the test imports it :/
-        # run('pip uninstall %s --yes' % config.libname)
+            # we need to commit and push the change of the version number before everything
+            # if we don't, travis will not have the right version and will fail to deploy
 
-        # make sure it passes the tests
-        if run('pytest test --quiet') != 0:
-            click.secho("The tests doesn't pass.", fg='red')
-            revert_version()
-            return
+            run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
+            run('git push origin', test)
 
-        # make sure I can install it
-        # r = run('pip install .') != 0
-        # if r != 0:
-        #     click.secho('Failed to install the updated library.' + str(r), fg='red')
-        #     revert_version()
-        #     return
+            if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
+                # creating a realase with the new version
+                if again:
+                    run('git tag %s -af -m "%s"' % (config.version, message), test)
+                    run('git push origin -f --tags', test)
+                else:
+                    run('git tag %s -a -m "%s"' % (config.version, message), test)
+                    run('git push origin --tags', test)
 
-
-        click.echo('Commits since last version:')
-        run('git log v%s..HEAD --oneline' % last_version)
-        click.echo("Describe what's in this release:")
-        # message = []
-        # last_line = 'sentinel'
-        # while last_line:
-        #     last_line = input('  ')
-        #     message.append(last_line)
-        # message = '\n'.join(message)
-        message = '\n'.join(iter(lambda: input('  '), ''))
-        short_message = 'Release of version %s' % config.version
-
-        # we need to commit and push the change of the version number before everything
-        # if we don't, travis will not have the right version and will fail to deploy
-
-        run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
-        run('git push origin', test)
-
-        if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
-            # creating a realase with the new version
-            if again:
-                run('git tag v%s -af -m "%s"' % (config.version, message), test)
-                run('git push origin -f --tags', test)
             else:
-                run('git tag v%s -a -m "%s"' % (config.version, message), test)
-                run('git push origin --tags', test)
+                return
 
-            click.secho('Version changed to ' + config.version, fg='green')
-        else:
-            revert_version()
-            return
-
-        if test:
             # We do not want to increase the version number at each test
-            revert_version()
+            if not test:
+                # if everything passed, we don't revert anything
+                version.need_revert = False
+                click.secho('Version changed to %r' % config.version, fg='green')
+
 
     @click.command()
     @pass_config
