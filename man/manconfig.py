@@ -12,6 +12,7 @@ class Version:
     the verision reverts, you can set revert_version to your own function just after
     entering the context manager.
     """
+
     MAJOR = 0
     MINOR = 1
     PATCH = 2
@@ -66,7 +67,7 @@ class VersionType(configlib.ConfigType):
         return isinstance(value, Version)
 
     def load(self, value: str):
-        match = re.match('v?(\d+)\.(\d+)\.(\d+)', value)
+        match = re.match('^v?(\d+)\.(\d+)\.(\d+)$', value)
         if match:
             return Version(int(match.group(1)), int(match.group(2)), int(match.group(3)))
         raise ValueError
