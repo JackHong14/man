@@ -78,7 +78,7 @@ class ManConfig(configlib.Config):
     This configuration is used for each lib to describe it.
     """
 
-    __config_path__ = './manconfig.json'  # always in the directory where invocated
+    __config_path__ = './.manconfig'  # always in the directory where invocated
 
     libname = ''
     description = ''

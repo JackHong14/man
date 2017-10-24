@@ -569,7 +569,7 @@ class ManCLi(AliasCLI):
         run('cd %s' % config.libname, True)
         os.chdir(LIB_DIR)
         click.echo(os.path.abspath(os.curdir))
-        config.__config_path__ = os.path.join(LIB_DIR, 'manconfig.json')
+        config.__config_path__ = os.path.join(LIB_DIR, '.manconfig')
 
         # Add
         run('man add pkg %s' % config.libname)
