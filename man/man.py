@@ -462,7 +462,7 @@ class ManCLi(AliasCLI):
 
             run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
 
-            if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
+            if click.confirm('Are you sure you want to create a new release (%s)?' % config.version):
 
                 run('git push origin', test)
                 if not test:
@@ -470,7 +470,7 @@ class ManCLi(AliasCLI):
 
                 # creating a realase with the new version
                 if again:
-                    run('git tag %s -af -m "%s"' % (config.version, message), test)
+                    run('git tag %s -af -m "%s" -m "%s"' % (config.version, short_message, message), test)
                     run('git push origin -f --tags', test)
                 else:
                     run('git tag %s -a -m "%s"' % (config.version, message), test)
