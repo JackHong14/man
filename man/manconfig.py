@@ -18,7 +18,7 @@ class Version:
 
     def __init__(self, major: int, minor: int, patch: int):
         self.version = [major, minor, patch]
-        self.last_version = None
+        self.last = None  # type: Version
         self.need_revert = True
 
     def __str__(self):
@@ -39,13 +39,13 @@ class Version:
         return self.version[item]
 
     def __enter__(self):
-        self.last_version = self.version[:]
+        self.last = Version(*self.version)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.need_revert:
-            self.version = self.last_version
-            self.last_version = None
+            self.version = self.last.version
+            self.last = None
             self.revert_version()
 
         self.need_revert = True

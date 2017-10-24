@@ -395,8 +395,17 @@ class ManCLi(AliasCLI):
         "config": ['config', 'conf'],
         'new_lib': ['new', 'create', 'new-lib'],
         'add': ['add'],
-        'remove': ['remove', 'rem', 'delete', 'del']
+        'remove': ['remove', 'rem', 'delete', 'del'],
+        'changelog': ['changelog', 'log', 'changes']
     }
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def changelog(config):
+        version = config.version.last or config.version
+        click.echo('Commits since last version:')
+        run('git log v%s..HEAD --oneline' % version, show=False)
 
     @click.command()
     @click.argument('importance', type=click.Choice(TYPES))
@@ -452,8 +461,8 @@ class ManCLi(AliasCLI):
                 click.secho("The tests doesn't pass.", fg='red')
                 return
 
-            click.echo('Commits since last version:')
-            run('git log v%s..HEAD --oneline' % last_version)
+            # Show what receently happened
+            run('man changelog')
 
             click.echo("Describe what's in this release:")
             message = '\n'.join(iter(lambda: input('  '), ''))
@@ -467,7 +476,7 @@ class ManCLi(AliasCLI):
 
             run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
             commited = True
-            
+
             if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
 
                 run('git push origin', test)
