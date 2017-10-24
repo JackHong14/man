@@ -476,6 +476,10 @@ class ManCLi(AliasCLI):
             # Show what receently happened
             run('man changelog')
 
+            if again:
+                click.echo('The last release description was:')
+                run('git tag v%s -l -n99' % version.last, show=False)
+
             click.echo("Describe what's in this release:")
             message = '\n'.join(iter(lambda: input('  '), ''))
             short_message = 'Release of version %s' % config.version
