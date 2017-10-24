@@ -1,5 +1,5 @@
 import pytest
-from man.manconfig import Version
+from man.manconfig import Version, VersionType
 
 
 @pytest.fixture
@@ -93,3 +93,51 @@ def test_version_setitem_resets_lower_importance(version: Version):
 
     version[version.MAJOR] = 100
     assert version.version == [100, 0, 0]
+
+
+@pytest.fixture
+def vtype():
+    return VersionType()
+
+
+@pytest.mark.parametrize('string, result', [
+    ('v1.2.3', [1, 2, 3]),
+    ('1.2.3', [1, 2, 3]),
+    ('v12345.123456.7890', [12345, 123456, 7890]),
+    ('0.0.0', [0, 0, 0]),
+])
+def test_versiontype_load_succes(vtype: VersionType, string, result):
+    assert vtype.load(string).version == result
+
+@pytest.mark.parametrize('input', [
+    '1.2.3.4',
+    '1.2.3b',
+    '1.2',
+    'v1',
+    'v1.2.',
+    'v1..2.3',
+    '1..2',
+    '1.2..'
+])
+def test_versiontype_load_fails(vtype: VersionType, input):
+    with pytest.raises(ValueError):
+        vtype.load(input)
+
+
+@pytest.mark.parametrize('version, saved', [
+    (Version(1, 2, 3), '1.2.3'),
+    (Version(0, 0, 0), '0.0.0')
+])
+def test_versiontype_save(vtype: VersionType, version, saved):
+    assert vtype.save(version) == saved
+    assert isinstance(vtype.save(version), str)
+
+def test_versiontype_isvalid(vtype: VersionType):
+    assert vtype.is_valid(Version(1, 2, 3))
+    assert not vtype.is_valid('v1.1.2')
+    assert not vtype.is_valid('1.1.2')
+    assert not vtype.is_valid([1, 2, 3])
+
+
+def test_version_type_name(vtype):
+    assert vtype.name == 'version'
