@@ -482,7 +482,12 @@ class ManCLi(AliasCLI):
 
             click.echo("Describe what's in this release:")
             message = '\n'.join(iter(lambda: input('  '), ''))
-            short_message = 'Release of version %s' % config.version
+            short_message = 'Release of version %s' % version
+
+            if not message and again:
+                message = run('git tag v%s -l -n99' % version.last, show=False, output=True)  #type: str
+                message = '\n'.join([msg.strip() for msg in message.splitlines()[2:]])
+
 
             # We need to save the config so the version in the setup is updated
             config.__save__()
