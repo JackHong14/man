@@ -7,6 +7,20 @@ def version():
     return Version(1, 2, 4)
 
 
+def test_version_need_revert_defaults(version: Version):
+    assert version.need_revert == True
+
+    with version:
+        pass
+
+    assert version.need_revert == True
+
+    with version:
+        version.need_revert = False
+
+    assert version.need_revert == True
+
+
 def test_version_revert(version: Version):
     with version:
         version[version.PATCH] = 18
