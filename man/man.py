@@ -410,6 +410,7 @@ class ManCLi(AliasCLI):
 
         # if there is a version.last, it means that changes are being made somewhere in the code to the version
         # Like in release for instance and we want to use this last version.
+
         version = config.version.last or config.version
 
         click.echo('Commits since last version:')
@@ -456,13 +457,14 @@ class ManCLi(AliasCLI):
                         run('git commit -a -m "Canceled release"')
                 else:
                     convert_readme(config)
-
             version.revert_version = revert_version
 
             if not again:
                 # we increase major/minor/path as chosen
                 # and reset the ones after
                 version[importance] += 1
+
+            click.secho('New version: %s' % version, fg='green')
 
             # changing version in the readme +
             # converting the readme in markdown to the one in rst
