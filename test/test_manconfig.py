@@ -48,8 +48,9 @@ def test_version_revert_callback(version: Version):
         raise RuntimeError
 
     with pytest.raises(RuntimeError):
-        with version:
-            version.revert_version = revert
+        with version as v:
+            assert version is v
+            v.revert_version = revert
 
     assert version.revert_version is not None
 
@@ -88,11 +89,12 @@ def test_version_setitem_resets_lower_importance(version: Version):
     version[version.PATCH] = 100
     assert version.version == [1, 2, 100]
 
-    version[version.MINOR] = 100
-    assert version.version == [1, 100, 0]
+    version[version.MINOR] += 100
+    assert version.version == [1, 102, 0]
 
     version[version.MAJOR] = 100
     assert version.version == [100, 0, 0]
+
 
 
 @pytest.fixture
