@@ -426,10 +426,11 @@ class ManCLi(AliasCLI):
 
             def revert_version():
                 click.secho('Version reverted to %s' % version, fg='yellow')
-                convert_readme(config)
                 if not already_pushed:
                     run('git reset HEAD~1', test)
+                    convert_readme(config)
                 else:
+                    convert_readme(config)
                     run('git commit -a -m "Canceled release"')
             version.revert_version = revert_version
 
