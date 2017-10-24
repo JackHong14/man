@@ -42,7 +42,7 @@ def pass_config(func):
     return inner
 
 
-def run(cmd: str, test=False, output=False):
+def run(cmd: str, test=False, output=False, show=True):
     """
     Create a process to run a given command.
 
@@ -51,9 +51,10 @@ def run(cmd: str, test=False, output=False):
     :return int: The exit code of the command
     """
 
-    # Print the command with nice colors
-    click.secho('$ ', fg='green', bold=1, nl=0)
-    click.secho(cmd, fg='cyan', bold=1)
+    if show:
+        # Print the command with nice colors
+        click.secho('$ ', fg='green', bold=1, nl=0)
+        click.secho(cmd, fg='cyan', bold=1)
 
     if cmd.startswith('man '):
         ctx = man.make_context('man', shlex.split(cmd)[1:])
