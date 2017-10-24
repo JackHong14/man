@@ -417,7 +417,8 @@ class ManCLi(AliasCLI):
         """
 
         test = TEST or test
-        already_pushed = False
+        pushed = False
+        commited = False
 
         # read and parsing the version
         with config.version as version:
@@ -426,12 +427,13 @@ class ManCLi(AliasCLI):
 
             def revert_version():
                 click.secho('Version reverted to %s' % version, fg='yellow')
-                if not already_pushed:
-                    run('git reset HEAD~1', test)
-                    convert_readme(config)
-                else:
-                    convert_readme(config)
-                    run('git commit -a -m "Canceled release"')
+                if commited:
+                    if not pushed:
+                        run('git reset HEAD~1', test)
+                        convert_readme(config)
+                    else:
+                        convert_readme(config)
+                        run('git commit -a -m "Canceled release"')
 
             version.revert_version = revert_version
 
@@ -463,12 +465,13 @@ class ManCLi(AliasCLI):
             # if we don't, travis will not have the right version and will fail to deploy
 
             run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
-
+            commited = True
+            
             if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
 
                 run('git push origin', test)
                 if not test:
-                    already_pushed = True
+                    pushed = True
 
                 # creating a realase with the new version
                 if again:
