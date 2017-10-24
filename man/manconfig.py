@@ -8,7 +8,9 @@ class Version:
 
     When you want to manipulate a version, it is better to do it with a context manager
     and set version.need_revert = False before exiting the context manager so it will
-    change the version only if your program had no errors.
+    change the version only if your program had no errors. If you want to do stuff when
+    the verision reverts, you can set revert_version to your own function just after
+    entering the context manager.
     """
     MAJOR = 0
     MINOR = 1
@@ -26,6 +28,9 @@ class Version:
         return 'v' + str(self)
 
     def __setitem__(self, key, value):
+        if isinstance(key, str):
+            key = getattr(self, key.upper())  # type: int
+
         self.version[key] = value
         for importance in range(key + 1, 3):
             self.version[importance] = 0
@@ -39,10 +44,15 @@ class Version:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.need_revert:
-           self.version = self.last_version
-           self.last_version = None
+            self.version = self.last_version
+            self.last_version = None
+            self.revert_version()
 
         self.need_revert = True
+        self.revert_version = lambda: 0
+
+    def revert_version(self):
+        pass
 
 
 
