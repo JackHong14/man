@@ -80,7 +80,7 @@ def convert_readme(config=None):
     if config:
         with open('readme.md') as f:
             readme = f.readlines()
-        readme[0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=%s)]' \
+        readme[0] = '[![Build Status](https://travis-ci.org/{github_username}/{libname}.svg?branch=v%s)]' \
                     '(https://travis-ci.org/{github_username}/{libname})\n'.format(**config.__dict__) % config.version
         with open('readme.md', 'w') as f:
             f.writelines(readme)
@@ -449,11 +449,11 @@ class ManCLi(AliasCLI):
                 return
 
             click.echo('Commits since last version:')
-            run('git log %s..HEAD --oneline' % last_version)
+            run('git log v%s..HEAD --oneline' % last_version)
 
             click.echo("Describe what's in this release:")
             message = '\n'.join(iter(lambda: input('  '), ''))
-            short_message = 'Release of version %r' % config.version
+            short_message = 'Release of version %s' % config.version
 
             # We need to save the config so the version in the setup is updated
             config.__save__()
@@ -463,7 +463,7 @@ class ManCLi(AliasCLI):
 
             run('git commit -a -m "%s" -m "%s"' % (short_message, message), test)
 
-            if click.confirm('Are you sure you want to create a new release (%s)?' % config.version):
+            if click.confirm('Are you sure you want to create a new release (v%s)?' % config.version):
 
                 run('git push origin', test)
                 if not test:
@@ -471,7 +471,7 @@ class ManCLi(AliasCLI):
 
                 # creating a realase with the new version
                 if again:
-                    run('git tag %s -af -m "%s" -m "%s"' % (config.version, short_message, message), test)
+                    run('git tag v%s -af -m "%s" -m "%s"' % (config.version, short_message, message), test)
                     run('git push origin -f --tags', test)
                 else:
                     run('git tag %s -a -m "%s"' % (config.version, message), test)
@@ -484,7 +484,7 @@ class ManCLi(AliasCLI):
             if not test:
                 # if everything passed, we don't revert anything
                 version.need_revert = False
-                click.secho('Version changed to %r' % config.version, fg='green')
+                click.secho('Version changed to %s' % config.version, fg='green')
 
 
     @click.command()

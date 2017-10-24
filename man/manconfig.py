@@ -22,9 +22,6 @@ class Version:
         self.need_revert = True
 
     def __str__(self):
-        return 'v%d.%d.%d' % tuple(self.version)
-
-    def __repr__(self):
         return '%d.%d.%d' % tuple(self.version)
 
     def __setitem__(self, key, value):
@@ -56,7 +53,6 @@ class Version:
 
     def revert_version(self):
         pass
-
 
 
 class VersionType(configlib.ConfigType):
