@@ -36,6 +36,9 @@ class Version:
             self.version[importance] = 0
 
     def __getitem__(self, item):
+        if isinstance(item, str):
+            item = getattr(self, item.upper())
+
         return self.version[item]
 
     def __enter__(self):
