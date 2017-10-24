@@ -400,12 +400,23 @@ class ManCLi(AliasCLI):
     }
 
     @click.command()
+    @click.option('--verbose', '-v', is_flag=True, default=False, help='Show the detailled commit messages.')
     @pass_config
     @staticmethod
-    def changelog(config):
+    def changelog(config, verbose):
+        """
+        See the commits since last release.
+        """
+
+        # if there is a version.last, it means that changes are being made somewhere in the code to the version
+        # Like in release for instance and we want to use this last version.
         version = config.version.last or config.version
+
         click.echo('Commits since last version:')
-        run('git log v%s..HEAD --oneline' % version, show=False)
+        if verbose:
+            run('git log v%s..HEAD' % version, show=False)
+        else:
+            run('git log v%s..HEAD --oneline' % version, show=False)
 
     @click.command()
     @click.argument('importance', type=click.Choice(TYPES))
@@ -432,7 +443,6 @@ class ManCLi(AliasCLI):
 
         # read and parsing the version
         with config.version as version:
-            last_version = str(version)
             click.secho('Current version: %s' % version, fg='green')
 
             def revert_version():
