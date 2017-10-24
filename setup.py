@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     setup(
         name='man',
-        version=config.version,
+        version=str(config.version),
         packages=config.packages,
         url='https://github.com/ddorn/man',
         license='MIT',
