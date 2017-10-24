@@ -22,10 +22,10 @@ class Version:
         self.need_revert = True
 
     def __str__(self):
-        return '%d.%d.%d' % tuple(self.version)
+        return 'v%d.%d.%d' % tuple(self.version)
 
-    def vstr(self):
-        return 'v' + str(self)
+    def __repr__(self):
+        return '%d.%d.%d' % tuple(self.version)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
