@@ -421,7 +421,7 @@ class ManCLi(AliasCLI):
 
         # read and parsing the version
         with config.version as version:
-            last_version  = str(version)
+            last_version = str(version)
             click.secho('Current version: %s' % version, fg='green')
 
             def revert_version():
@@ -432,6 +432,7 @@ class ManCLi(AliasCLI):
                 else:
                     convert_readme(config)
                     run('git commit -a -m "Canceled release"')
+
             version.revert_version = revert_version
 
             if not again:
@@ -485,7 +486,6 @@ class ManCLi(AliasCLI):
                 # if everything passed, we don't revert anything
                 version.need_revert = False
                 click.secho('Version changed to %s' % config.version, fg='green')
-
 
     @click.command()
     @pass_config
