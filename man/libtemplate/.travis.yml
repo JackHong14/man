@@ -3,6 +3,9 @@ python:
   - '3.6'
 script:
   - pytest test
+install:
+  - pip install man
+  - pip install -r requirements.txt
 deploy:
   provider: pypi
   user: '{pypi_username}'
