@@ -474,7 +474,7 @@ class ManCLi(AliasCLI):
                     run('git tag v%s -af -m "%s" -m "%s"' % (config.version, short_message, message), test)
                     run('git push origin -f --tags', test)
                 else:
-                    run('git tag %s -a -m "%s"' % (config.version, message), test)
+                    run('git tag v%s -a -m "%s" -m "%s"' % (config.version, short_message, message), test)
                     run('git push origin --tags', test)
 
             else:
