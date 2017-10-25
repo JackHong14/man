@@ -2,7 +2,8 @@
     "data_files": [],
     "dependancies": [
         "pyconfiglib==1.*",
-        "pypandoc"
+        "pypandoc",
+        "superprompt"
     ],
     "description": "",
     "email": "diego.dorn@free.fr",
