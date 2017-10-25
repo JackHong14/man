@@ -21,10 +21,18 @@ except ImportError:
 TYPES = ['major', 'minor', 'patch']
 TEST = False
 
-# color for info messages
-DONE = 'green'
-FAIL = 'red'
-WARN = 'yellow'
+
+def warn(text, *args):
+    click.secho(text % args, fg='yellow')
+
+
+def fail(text, *args):
+    click.secho(text % args, fg='red')
+
+
+def done(text, *args):
+    click.secho(text % args, fg='green')
+
 
 def staticmethod(func):
     """We just override it so no IDE thinks the functions of the Cmd classes are called with self, because they are never."""
@@ -172,7 +180,7 @@ def copy_template(FORMATERS: ManConfig, dir):
         # and replace the begining by the dest loc
         dest_directory = os.path.join(LIB_DIR, dest_directory)
 
-        click.secho('Creating directory %s' % dest_directory, fg='yellow')
+        warn('Creating directory %s', dest_directory)
         os.mkdir(dest_directory)
 
         for file in files:
@@ -247,11 +255,11 @@ class AddCli(AddRemCLI):
         dep = '%s%s' % (lib, version)
 
         if dep in config.dependancies:
-            click.secho('%s is already in the dependancies' % dep, fg='red')  # ✓
+            warn('%s is already in the dependancies', dep)  # ✓
             return
 
         config.dependancies.append(dep)
-        click.secho('Added dependancy %s' % dep, fg='green')
+        done('Added dependancy %s', dep)
 
     @click.command()
     @click.argument('pkg-dir')
@@ -272,34 +280,34 @@ class AddCli(AddRemCLI):
         pkg_name = '.'.join(parts)
 
         if pkg_name in config.packages:
-            click.secho('The package %s is already in the packages list.' % pkg_dir, fg='yellow')
+            warn('The package %s is already in the packages list.', pkg_dir)
             return
 
         if not all(part.isidentifier() for part in parts):
-            click.secho('The name "%s" is not a valid package name or path.' % pkg_dir, fg='red')
+            fail('The name "%s" is not a valid package name or path.', pkg_dir)
             return
 
         new_pkg = False
         if not os.path.isdir(pkg_dir):  # dir + exists
-            click.secho('It seems there is no directory matching your package path', fg='yellow')
+            warn('It seems there is no directory matching your package path')
             if not click.confirm('Do you want to create the package %s ?' % pkg_dir, default=True):
                 return
             # creating dir
             os.makedirs(pkg_dir, exist_ok=True)
-            click.secho('Package created !', fg='green')
+            done('Package created !')
             new_pkg = True
 
         if new_pkg or not os.path.exists(os.path.join(pkg_dir, '__init__.py')):
             if not new_pkg:
-                click.secho('The package is missing an __init__.py.', fg='yellow')
+                warn('The package is missing an __init__.py.')
             if new_pkg or click.confirm('Do you want to add one ?', default=True):
                 # creating __init__.py
                 with open(os.path.join(pkg_dir, '__init__.py'), 'w') as f:
                     f.write('"""\nPackage %s\n"""' % pkg_name)
-                click.secho('Added __init__.py in %s' % pkg_dir, fg='green')
+                done('Added __init__.py in %s', pkg_dir)
 
         config.packages.append(pkg_name)
-        click.secho('The package %s was added to the package list.' % pkg_name, fg='green')
+        done('The package %s was added to the package list.', pkg_name)
 
     @click.command()
     @pass_config
@@ -400,9 +408,9 @@ class RemoveCLI(AddRemCLI):
 
         if pkg_name in config.packages:
             config.packages.remove(pkg_name)
-            click.secho('The package %s was removed from in the packages list.' % pkg_dir, fg=DONE)
+            done('The package %s was removed from in the packages list.', pkg_dir)
         else:
-            click.secho('The package %s was not in the package list.' % pkg_name, fg=WARN)
+            warn('The package %s was not in the package list.', pkg_name)
 
     @click.command()
     @click.argument('script', default='')
@@ -425,10 +433,10 @@ class RemoveCLI(AddRemCLI):
         for s in config.scripts[:]:
             if s.partition('=')[0] == script:
                 config.scripts.remove(s)
-                click.secho('The script %s was removed.' % s)
+                done('The script %s was removed.', s)
                 break
         else:
-            click.echo('There is not script named %s.' % script)
+            warn('There is not script named %s.', script)
 
 
 class GenCli(AliasCLI):
@@ -557,10 +565,10 @@ class ManCLi(AliasCLI):
 
         # read and parsing the version
         with config.version as version:
-            click.secho('Current version: %s' % version, fg='green')
+            done('Current version: %s', version)
 
             def revert_version():
-                click.secho('Version reverted to %s' % version, fg='yellow')
+                warn('Version reverted to %s', version)
                 if commited:
                     if not pushed:
                         run('git reset HEAD~1', test)
@@ -578,7 +586,7 @@ class ManCLi(AliasCLI):
                 # and reset the ones after
                 version[importance] += 1
 
-            click.secho('New version: %s' % version, fg='green')
+            done('New version: %s', version)
 
             # changing version in the readme +
             # converting the readme in markdown to the one in rst
@@ -586,7 +594,7 @@ class ManCLi(AliasCLI):
 
             # make sure it passes the tests
             if run('pytest test --quiet') != 0:
-                click.secho("The tests doesn't pass.", fg='red')
+                fail("The tests doesn't pass.")
                 return
 
             # Show what receently happened
@@ -635,7 +643,7 @@ class ManCLi(AliasCLI):
             if not test:
                 # if everything passed, we don't revert anything
                 version.need_revert = False
-                click.secho('Version changed to %s' % config.version, fg='green')
+                done('Version changed to %s', config.version)
 
     @click.command()
     @pass_config
@@ -699,8 +707,10 @@ class ManCLi(AliasCLI):
         run('git init .')
         run('git add .')
         run('git commit -m "initial commit"')
-        run("""curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
-                **config.__dict__) % (chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly brackets
+        run(
+            """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
+                **config.__dict__) % (
+            chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly brackets
         run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
         run('git push --set-upstream origin master')
 
