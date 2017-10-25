@@ -10,7 +10,7 @@ except FileNotFoundError:
 
 setup(
     name='man',
-    version='1.3.0',
+    version='1.3.1',
     packages=['man'],
     url='https://github.com/ddorn/man',
     license='MIT',
