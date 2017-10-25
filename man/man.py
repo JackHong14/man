@@ -505,7 +505,6 @@ class GenCli(AliasCLI):
 
         generate.requirements(config)
         click.echo('requirements.txt generated...')
-        click.echo('requirements.txt generated...')
 
         generate.setup(config)
         click.echo('setup.py generated...')
