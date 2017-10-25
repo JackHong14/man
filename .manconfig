@@ -5,7 +5,7 @@
         "pypandoc",
         "superprompt"
     ],
-    "description": "",
+    "description": "Project manager for pypi libraries",
     "email": "diego.dorn@free.fr",
     "fullname": "Diego Dorn",
     "github_username": "ddorn",
