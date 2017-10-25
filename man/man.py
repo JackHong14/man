@@ -21,6 +21,10 @@ except ImportError:
 TYPES = ['major', 'minor', 'patch']
 TEST = False
 
+# color for info messages
+DONE = 'green'
+FAIL = 'red'
+WARN = 'yellow'
 
 def staticmethod(func):
     """We just override it so no IDE thinks the functions of the Cmd classes are called with self, because they are never."""
@@ -257,7 +261,7 @@ class AddCli(AddRemCLI):
         """
         Registers a package.
 
-        A package is somthing people will be import by doing `import mypackage` or
+        A package is something people will be import by doing `import mypackage` or
         `import mypackage.mysubpackage`. They must have a __init__.py file.
 
         Aliases: pkg, package
@@ -350,7 +354,81 @@ class AddCli(AddRemCLI):
 
 
 class RemoveCLI(AddRemCLI):
-    ...
+    @click.command()
+    @click.argument('lib', default='')
+    @pass_config
+    @staticmethod
+    def dependancy(config, lib):
+        """
+        Removes a dependancy for your project.
+
+        Aliases: dependancy, dep
+        """
+
+        if not lib:
+            lib = superprompt.prompt_choice('Dependacy to remove', config.dependancies)
+
+        for dep in config.dependancies[:]:
+            if lib == dep.partition('=')[0]:
+                config.dependancies.remove(dep)
+                click.echo('Removed dependancy %s' % dep)
+                break
+        else:
+            click.echo('No dependancy matching %s' % lib)
+
+    @click.command()
+    @click.argument('pkg-dir', default='')
+    @staticmethod
+    @pass_config
+    def pkg(config, pkg_dir: str):
+        """
+        Removes a package.
+
+        A package is something people will be import by doing `import mypackage` or
+        `import mypackage.mysubpackage`. They must have a __init__.py file.
+        This doesn't delete any files, just doesn't include this package un the distribution.
+
+        Aliases: pkg, package
+        """
+
+        if not pkg_dir:
+            pkg_dir = superprompt.prompt_choice('Package to remove', config.packages)
+
+        pkg_dir = pkg_dir.replace('\\', '/')
+        parts = [part for part in pkg_dir.split('/') if part]  # thus removing thinks like final slash...
+        pkg_name = '.'.join(parts)
+
+        if pkg_name in config.packages:
+            config.packages.remove(pkg_name)
+            click.secho('The package %s was removed from in the packages list.' % pkg_dir, fg=DONE)
+        else:
+            click.secho('The package %s was not in the package list.' % pkg_name, fg=WARN)
+
+    @click.command()
+    @click.argument('script', default='')
+    @pass_config
+    @staticmethod
+    def script(config: ManConfig, script):
+        """
+        Remove a console entry point for your library.
+
+        A console entry point is the name of a function that someone who has
+        installed your package can call from anywhere because an executable
+        is created at instalation time for the specific platform.
+        This doesn't delete any file. It just removes the script from the
+        list of your scripts.
+        """
+
+        if not script:
+            script = superprompt.prompt_choice('Script', [s.partition('=')[0] for s in config.scripts])
+
+        for s in config.scripts[:]:
+            if s.partition('=')[0] == script:
+                config.scripts.remove(s)
+                click.secho('The script %s was removed.' % s)
+                break
+        else:
+            click.echo('There is not script named %s.' % script)
 
 
 class GenCli(AliasCLI):
