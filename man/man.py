@@ -549,7 +549,7 @@ class ManCLi(AliasCLI):
             # We need to save the config so the version in the setup is updated
             config.__save__()
             convert_readme(config)
-
+            run('man generate all')
             # we need to commit and push the change of the version number before everything
             # if we don't, travis will not have the right version and will fail to deploy
 
