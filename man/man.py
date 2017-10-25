@@ -7,6 +7,7 @@ import shlex
 
 import click
 import configlib
+import superprompt
 
 try:
     from manconfig import ManConfig, Version
@@ -207,7 +208,8 @@ class AddRemCLI(AliasCLI):
         'file': ['file', 'f'],
         'pkgdata': ['pkg-data', 'pkgdata', 'data'],
         'pkg': ['pkg', 'package'],
-        'dependancy': ['dependancy', 'dep']
+        'dependancy': ['dependancy', 'dep'],
+        'script': ['script', 'entry-point', 'console_script']
     }
 
 
@@ -247,8 +249,6 @@ class AddCli(AddRemCLI):
             return
 
         config.dependancies.append(dep)
-        with open('requirements.txt', 'a') as f:
-            f.write(dep + '\n')
         click.secho('Added dependancy %s' % dep, fg='green')
 
     @click.command()
@@ -385,6 +385,57 @@ class AddCli(AddRemCLI):
 
         click.secho('Added patern "%s" in package "%s".' % (patern, package), fg='green')
 
+    @click.command()
+    @pass_config
+    @staticmethod
+    def script(config: ManConfig):
+        """
+        Add a console entry point for your library.
+
+        A console entry point is the name of a function that someone who has
+        installed your package can call from anywhere because an executable
+        is created at instalation time for the specific platform.
+        """
+
+        name = click.prompt('Name of the scipt', default=config.libname)
+        file = superprompt.prompt_file('File where your entry function is')
+
+        # we import the file as a module
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(os.path.basename(file).partition('.')[0], file)
+        foo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(foo)
+
+        # find all the functions (callables not classes)
+        function_names = []
+        for objname in dir(foo):
+            obj = getattr(foo, objname)
+            if callable(obj) and not isinstance(obj, type):
+                function_names.append(objname)
+
+        def complete(text):
+            return [fn for fn in function_names if fn.startswith(text)]
+
+        click.echo('Note that the function will be called without any arguments.')
+        function_name = superprompt.prompt_autocomplete('Name of the function to execute', complete)
+
+        # replace the directories sep by dots
+        # and remove the .py at the end
+        file = file.replace('\\', '.').replace('/', '.').rpartition('.')[0]
+
+        script = '{}={}:{}'.format(name, file, function_name)
+
+        for i, sc in enumerate(config.scripts[:]):
+            if script.partition('=')[0] == name:
+                click.echo('There is already a script with this name (%s)' % sc)
+                if click.prompt('Override it ?'):
+                    config.scripts[i] = script
+                    click.echo('Script %s added!' % script, color='green')
+                break
+        else:
+            config.scripts.append(script)
+            click.echo('Script %s added!' % script, color='green')
+
 
 class RemoveCLI(AddRemCLI):
     ...
@@ -423,7 +474,7 @@ class GenCli(AliasCLI):
         It is here that the metadata and the data of your library are defined. If some
         data is nissing during your installation, try to include it with `man add ...`
         """
-        
+
         generate.setup(config)
         click.echo('setup.py generated!')
 
@@ -453,6 +504,7 @@ class GenCli(AliasCLI):
         click.echo('MANIFEST.in generated...')
 
         generate.requirements(config)
+        click.echo('requirements.txt generated...')
         click.echo('requirements.txt generated...')
 
         generate.setup(config)
@@ -529,6 +581,7 @@ class ManCLi(AliasCLI):
                         run('git commit -a -m "Canceled release"')
                 else:
                     convert_readme(config)
+
             version.revert_version = revert_version
 
             if not again:
@@ -559,9 +612,8 @@ class ManCLi(AliasCLI):
             short_message = 'Release of version %s' % version
 
             if not message and again:
-                message = run('git tag v%s -l -n99' % version.last, show=False, output=True)  #type: str
+                message = run('git tag v%s -l -n99' % version.last, show=False, output=True)  # type: str
                 message = '\n'.join([msg.strip() for msg in message.splitlines()[2:]])
-
 
             # We need to save the config so the version in the setup is updated
             config.__save__()
@@ -690,6 +742,7 @@ class ManCLi(AliasCLI):
     @staticmethod
     def gen():
         """Generate important files."""
+
 
 @click.command(cls=ManCLi)
 @click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')

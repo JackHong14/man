@@ -19,5 +19,8 @@
         "man"
     ],
     "pypi_username": "ddorn",
+    "scripts": [
+        "man=man.man:man"
+    ],
     "version": "1.2.0"
 }

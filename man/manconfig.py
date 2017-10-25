@@ -86,6 +86,10 @@ class ManConfig(configlib.Config):
     email = ''
     github_username = ''
     pypi_username = ''
+
+    scripts = []
+    __scripts_type__ = configlib.Python(list)
+
     version = Version(0, 0, 0)
     __version_type__ = VersionType()
 
