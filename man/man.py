@@ -394,7 +394,8 @@ class GenCli(AliasCLI):
     aliases = {
         'manifest': ['manifest', 'man', 'manifest.in'],
         'setup': ['setup', 'setup.py'],
-        'all': ['all']
+        'all': ['all'],
+        'requirements': ['requirements', 'requirements.txt', 'req']
     }
 
     @click.command()
@@ -429,6 +430,20 @@ class GenCli(AliasCLI):
     @click.command()
     @pass_config
     @staticmethod
+    def requierements(config):
+        """
+        Generate requirements.txt.
+
+        The requirements are the exernal libraries that needs to be install in order to
+        use your library, to install or deploy it. You can add requirements with `man add
+        dep ...`
+        """
+        generate.requirements(config)
+        click.echo('requirements.txt generated!')
+
+    @click.command()
+    @pass_config
+    @staticmethod
     def all(config):
         """
         Same as running all `man generate` commands.
@@ -437,9 +452,11 @@ class GenCli(AliasCLI):
         generate.manifest(config)
         click.echo('MANIFEST.in generated...')
 
+        generate.requirements(config)
+        click.echo('requirements.txt generated...')
+
         generate.setup(config)
         click.echo('setup.py generated...')
-
 
 
 class ManCLi(AliasCLI):
