@@ -11,9 +11,11 @@ import configlib
 try:
     from manconfig import ManConfig, Version
     from mangeneralconfig import GeneralConfig
+    from functions import generate
 except ImportError:
     from .manconfig import ManConfig, Version
     from .mangeneralconfig import GeneralConfig
+    from .functions import generate
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
@@ -387,6 +389,37 @@ class AddCli(AddRemCLI):
 class RemoveCLI(AddRemCLI):
     ...
 
+class GenCli(AliasCLI):
+    aliases = {
+        'manifest': ['manifest', 'man', 'manifest.in'],
+        'all': ['all']
+    }
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def manifest(config):
+        """
+        Generates the MANIFEST.in file.
+
+        The MANIFEST.in file  is responsible of the inclusion of  all the files you want
+        in your final distribution. We include all the packages added with `man add pkg`
+        """
+
+        generate.manifest(config)
+        click.echo('Manifest generated !')
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def all(config):
+        """
+        Same as running all `man generate` commands.
+        """
+
+        generate.manifest(config)
+        click.echo('Manifest generated...')
+
 
 class ManCLi(AliasCLI):
     aliases = {
@@ -396,7 +429,8 @@ class ManCLi(AliasCLI):
         'new_lib': ['new', 'create', 'new-lib'],
         'add': ['add'],
         'remove': ['remove', 'rem', 'delete', 'del'],
-        'changelog': ['changelog', 'log', 'changes']
+        'changelog': ['changelog', 'log', 'changes'],
+        'gen': ['gen', 'generate']
     }
 
     @click.command()
@@ -614,6 +648,10 @@ class ManCLi(AliasCLI):
         This action can be undone by running man add with the same arguments.
         """
 
+    @click.command(cls=GenCli)
+    @staticmethod
+    def gen():
+        """Generate important files."""
 
 @click.command(cls=ManCLi)
 @click.option('--test', is_flag=True, help='Actions are only done in local, nothing is pushed to the world')
