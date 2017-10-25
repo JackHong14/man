@@ -389,9 +389,11 @@ class AddCli(AddRemCLI):
 class RemoveCLI(AddRemCLI):
     ...
 
+
 class GenCli(AliasCLI):
     aliases = {
         'manifest': ['manifest', 'man', 'manifest.in'],
+        'setup': ['setup', 'setup.py'],
         'all': ['all']
     }
 
@@ -407,7 +409,22 @@ class GenCli(AliasCLI):
         """
 
         generate.manifest(config)
-        click.echo('Manifest generated !')
+        click.echo('MANIFEST.in generated !')
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def setup(config):
+        """
+        Generate setup.py.
+
+        This file is a central point of both the installation and deployement process.
+        It is here that the metadata and the data of your library are defined. If some
+        data is nissing during your installation, try to include it with `man add ...`
+        """
+        
+        generate.setup(config)
+        click.echo('setup.py generated!')
 
     @click.command()
     @pass_config
@@ -418,7 +435,11 @@ class GenCli(AliasCLI):
         """
 
         generate.manifest(config)
-        click.echo('Manifest generated...')
+        click.echo('MANIFEST.in generated...')
+
+        generate.setup(config)
+        click.echo('setup.py generated...')
+
 
 
 class ManCLi(AliasCLI):
