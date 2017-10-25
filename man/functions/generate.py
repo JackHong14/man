@@ -51,7 +51,8 @@ setup(
     description='{config.description}',
     long_description=long_description,
     install_requires={config.dependancies},
-    include_package_data=True
+    include_package_data=True,
+    scripts=dict(console_scripts={config.scripts})
 )
 """
     # data_files=[(dir, list(set(file for patern in pats for file in glob.glob(patern, recursive=True)))) for (dir, pats) in config.data_files],
