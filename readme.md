@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ddorn/man.svg?branch=v1.3.1)](https://travis-ci.org/ddorn/man)
+[![Build Status](https://travis-ci.org/ddorn/man.svg?branch=v1.4.0)](https://travis-ci.org/ddorn/man)
 
 # man
 
