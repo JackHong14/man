@@ -644,7 +644,7 @@ class ManCLi(AliasCLI):
         run("""curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
                 **config.__dict__) % (chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly brackets
         run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
-        run('git push origin master')
+        run('git push --set-upstream origin master')
 
         whats_next(config)
 
