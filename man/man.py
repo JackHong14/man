@@ -219,7 +219,9 @@ class AddRemCLI(AliasCLI):
     aliases = {
         'pkg': ['pkg', 'package'],
         'dependancy': ['dependancy', 'dep'],
-        'script': ['script', 'entry-point', 'console_script']
+        'script': ['script', 'entry-point', 'console_script'],
+        'keywords': ['keywords', 'keyword', 'kw'],
+        'classifiers': ['classifiers', 'classifier', 'tag']
     }
 
 
@@ -360,6 +362,17 @@ class AddCli(AddRemCLI):
             config.scripts.append(script)
             click.echo('Script %s added!' % script, color='green')
 
+    @click.command()
+    @click.argument('keywords', nargs=-1)
+    @pass_config
+    @staticmethod
+    def keywords(config: ManConfig, keywords):
+        if not keywords:
+            warn('You need to add at least one keyword.')
+            return
+
+        config.keywords = ' '.join(set(' '.join(keywords).split()) | set(config.keywords.split()))
+
 
 class RemoveCLI(AddRemCLI):
     @click.command()
@@ -438,6 +451,17 @@ class RemoveCLI(AddRemCLI):
         else:
             warn('There is not script named %s.', script)
 
+    @click.command()
+    @pass_config
+    @staticmethod
+    def keywords(config: ManConfig):
+
+        if not config.keywords.split():
+            warn('There is not keywords.')
+            return
+
+        kw = superprompt.prompt_choice('Keywords to remove', config.keywords.split(), only_in_poss=False)
+        config.keywords = ' '.join(set(config.keywords.split()) - set(kw.split()))
 
 class GenCli(AliasCLI):
     aliases = {
@@ -678,6 +702,7 @@ class ManCLi(AliasCLI):
         with GeneralConfig() as general_config:
             config.libname = click.prompt('Name of your library')
             config.description = click.prompt('Short description')
+            config.keywords = click.prompt('Keywords (space separated)', default='', show_default=False)
             config.fullname = general_config.fullname = click.prompt('Full name', default=general_config.fullname)
             config.email = general_config.email = click.prompt('E-Mail', default=general_config.email)
             config.github_username = general_config.github_username = click.prompt("Github username",
@@ -732,9 +757,9 @@ class ManCLi(AliasCLI):
     @staticmethod
     def remove():
         """
-        NOT IMPLEMENTED: Remove something from your project.
+        Remove something from your project.
 
-        This action can be undone by running man add with the same arguments.
+        This will NEVER delete files, but only updtate your configuration.
         """
 
     @click.command(cls=GenCli)
