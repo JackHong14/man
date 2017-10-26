@@ -203,6 +203,37 @@ def copy_template(FORMATERS: ManConfig, dir):
                 f.write(text)
 
 
+def select_classifier():
+    """Prompt a classifier."""
+
+    with open('man/assets/pypi-classifiers.txt') as f:
+        all_classifiers = f.read().splitlines()
+
+    def complete(text: str):
+        depth = len(text.split('::'))
+        poss = set()
+
+        for classi in all_classifiers:
+            if not classi.startswith(text):
+                continue
+
+            classi = classi.split('::')
+            reduced = '::'.join(classi[:depth])
+            if len(classi) == depth:
+                poss.add(reduced)
+            else:
+                poss.add(reduced + ':: ')
+
+        return sorted(poss)
+
+    while True:
+        classi = superprompt.prompt_autocomplete('Classifier', complete, '', show_default=False)
+
+        if classi in all_classifiers:
+            return classi
+
+        click.echo('Not a valid classifier.')
+
 class AliasCLI(click.MultiCommand):
     aliases = {}  # type: Dict[str, List[str]]
 
@@ -373,6 +404,27 @@ class AddCli(AddRemCLI):
 
         config.keywords = ' '.join(set(' '.join(keywords).split()) | set(config.keywords.split()))
 
+    @click.command()
+    @click.option('--list', '-l', 'listoption',is_flag=True, help='Print a list of all possible classifiers.')
+    @pass_config
+    @staticmethod
+    def classifiers(config: ManConfig, listoption):
+        with open('man/assets/pypi-classifiers.txt') as f:
+            all_classifiers = f.read().splitlines()
+
+        if listoption:
+            for classi in all_classifiers:
+                click.echo(classi)
+            return
+
+        classi = select_classifier()
+
+        if classi in config.classifiers:
+            warn('This classifier is already selected.')
+        else:
+            config.classifiers.append(classi)
+            done('Added classifier %s', click.style(classi, bold=True))
+
 
 class RemoveCLI(AddRemCLI):
     @click.command()
@@ -462,6 +514,7 @@ class RemoveCLI(AddRemCLI):
 
         kw = superprompt.prompt_choice('Keywords to remove', config.keywords.split(), only_in_poss=False)
         config.keywords = ' '.join(set(config.keywords.split()) - set(kw.split()))
+
 
 class GenCli(AliasCLI):
     aliases = {

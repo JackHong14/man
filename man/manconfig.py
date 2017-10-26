@@ -109,3 +109,6 @@ class ManConfig(configlib.Config):
 
     dependancies = []
     __dependancies_type__ = configlib.Python(list)
+
+
+__all__ = ['ManConfig']
