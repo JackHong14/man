@@ -20,5 +20,6 @@ setup(
     long_description=long_description,
     install_requires=['pyconfiglib==1.*', 'pypandoc', 'superprompt'],
     include_package_data=True,
-    scripts=dict(console_scripts=['man=man.man:man'])
+    scripts=dict(console_scripts=['man=man.man:man']),
+    keywords='developpement libraries setuptools versioning deployment management packaging PyPi'
 )

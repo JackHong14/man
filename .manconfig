@@ -1,4 +1,5 @@
 {
+    "classifiers": [],
     "data_files": [],
     "dependancies": [
         "pyconfiglib==1.*",
@@ -9,6 +10,7 @@
     "email": "diego.dorn@free.fr",
     "fullname": "Diego Dorn",
     "github_username": "ddorn",
+    "keywords": "developpement libraries setuptools versioning deployment management packaging PyPi",
     "libname": "man",
     "package_data": {
         "man": [
