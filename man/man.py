@@ -227,7 +227,7 @@ def select_classifier():
         return sorted(poss)
 
     while True:
-        classi = superprompt.prompt_autocomplete('Classifier', complete, '', show_default=False)
+        classi = superprompt.prompt_autocomplete('Classifier', complete, '', show_default=False, color='yellow')
 
         if classi in all_classifiers:
             return classi
@@ -514,6 +514,14 @@ class RemoveCLI(AddRemCLI):
 
         kw = superprompt.prompt_choice('Keywords to remove', config.keywords.split(), only_in_poss=False)
         config.keywords = ' '.join(set(config.keywords.split()) - set(kw.split()))
+
+    @click.command()
+    @pass_config
+    @staticmethod
+    def classifiers(config: ManConfig):
+        tag = superprompt.prompt_choice('Tag to remove', config.classifiers, color='yellow')
+        config.classifiers.remove(tag)
+        done('Removed tag %s' % click.style(tag, bold=True))
 
 
 class GenCli(AliasCLI):
