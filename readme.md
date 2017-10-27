@@ -97,7 +97,7 @@ Id there is a tilde (`~`) after a command, there is an interactive prompt dispon
  - `changelog`
     - `-v` / `--verbose`
  - `config` ~
-    - See the `pyconfiglib` reference
+    - See the `pyconfiglib` [reference](https://github.com/ddorn/pyconfiglib).
  - `gen`
     - `readme.rst`
     - `setup.py`
