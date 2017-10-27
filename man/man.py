@@ -503,7 +503,7 @@ class RemoveCLI(AddRemCLI):
     @staticmethod
     def script(config: ManConfig, script):
         """
-        Remove a console entry point for your library.
+        Remove a console entry point.
 
         A console entry point is the name of a function that someone who has
         installed your package can call from anywhere because an executable
