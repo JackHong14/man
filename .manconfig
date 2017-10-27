@@ -5,7 +5,9 @@
         "Intended Audience :: Developers",
         "Environment :: Console",
         "License :: OSI Approved :: MIT License",
-        "Topic :: Software Development :: Version Control :: Git"
+        "Topic :: Software Development :: Version Control :: Git",
+        "Topic :: Desktop Environment :: File Managers",
+        "Topic :: System :: Software Distribution"
     ],
     "data_files": [],
     "dependancies": [
@@ -17,7 +19,7 @@
     "email": "diego.dorn@free.fr",
     "fullname": "Diego Dorn",
     "github_username": "ddorn",
-    "keywords": "developpement libraries setuptools versioning deployment management packaging PyPi",
+    "keywords": "libraries developpement deployment versioning setuptools management distribution packaging PyPi",
     "libname": "man",
     "package_data": {
         "man": [
