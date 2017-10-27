@@ -398,17 +398,37 @@ class AddCli(AddRemCLI):
     @pass_config
     @staticmethod
     def keywords(config: ManConfig, keywords):
+        """
+        Add a keyword.
+
+        Keywords are usefull to find your library and know what it is doing.
+        Enter a list off words separeded by spaces to add them as keywords.
+        There is no two-words keywords but you can link them with an hyphen
+        if really needed.
+
+        Aliases: keywords, keyword, kw
+        """
+
         if not keywords:
             warn('You need to add at least one keyword.')
             return
 
-        config.keywords = ' '.join(set(' '.join(keywords).split()) | set(config.keywords.split()))
+        config.keywords = ' '.join(set(' '.join(keywords.lower()).split()) | set(config.keywords.split()))
 
     @click.command()
     @click.option('--list', '-l', 'listoption',is_flag=True, help='Print a list of all possible classifiers.')
     @pass_config
     @staticmethod
     def classifiers(config: ManConfig, listoption):
+        """
+        Add a trove classifier.
+
+        Trove classifiers are used by PyPi to let poeple browse libs more easily.
+        You can find a full list here: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        But they are all accessible via completion or with the --list option.
+
+        Aliases: tag, classifier
+        """
         with open('man/assets/pypi-classifiers.txt') as f:
             all_classifiers = f.read().splitlines()
 
@@ -507,6 +527,14 @@ class RemoveCLI(AddRemCLI):
     @pass_config
     @staticmethod
     def keywords(config: ManConfig):
+        """
+        Remove a keyword.
+
+        Keywords are usefull to find your library and know what it is doing.
+        If you think that one keyword you added doesn't fit your lib, this deletes it.
+
+        Aliases: keywords, keyword, kw
+        """
 
         if not config.keywords.split():
             warn('There is not keywords.')
@@ -519,6 +547,16 @@ class RemoveCLI(AddRemCLI):
     @pass_config
     @staticmethod
     def classifiers(config: ManConfig):
+        """
+        Remove a trove classifier.
+
+        Trove classifiers are used by PyPi to let poeple browse libs more easily.
+        You can find a full list here: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        But they are all accessible via completion or with `man add tag --list` option.
+
+        Aliases: tag, classifier
+        """
+
         tag = superprompt.prompt_choice('Tag to remove', config.classifiers, color='yellow')
         config.classifiers.remove(tag)
         done('Removed tag %s' % click.style(tag, bold=True))
