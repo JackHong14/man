@@ -20,6 +20,7 @@ except ImportError:
 
 TYPES = ['major', 'minor', 'patch']
 TEST = False
+CLASSIFIER_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'assets/pypi-classifiers.txt')
 
 
 def warn(text, *args):
@@ -206,7 +207,7 @@ def copy_template(FORMATERS: ManConfig, dir):
 def select_classifier():
     """Prompt a classifier."""
 
-    with open('man/assets/pypi-classifiers.txt') as f:
+    with open(CLASSIFIER_PATH) as f:
         all_classifiers = f.read().splitlines()
 
     def complete(text: str):
@@ -429,7 +430,8 @@ class AddCli(AddRemCLI):
 
         Aliases: tag, classifier
         """
-        with open('man/assets/pypi-classifiers.txt') as f:
+
+        with open(CLASSIFIER_PATH) as f:
             all_classifiers = f.read().splitlines()
 
         if listoption:
