@@ -1,4 +1,5 @@
 import glob
+import json
 import os
 import subprocess
 import sys
@@ -833,10 +834,9 @@ class ManCLi(AliasCLI):
         run('git init .')
         run('git add .')
         run('git commit -m "initial commit"')
-        run(
-            """curl -u '{github_username}' https://api.github.com/user/repos -d '%s"name":"{libname}", "description": "{description}"%s' """.format(
-                **config.__dict__) % (
-            chr(123), chr(125)))  # the chr() are because of the formating that wont like the curly brackets
+        data = json.dumps(dict(name=config.libname, description=config.description))
+        data = data.replace('\\', r'\\').replace('"', r'\"')
+        run("""curl -u "%s" https://api.github.com/user/repos -d "%s" """ % (config.github_username, data))
         run('git remote add origin https://github.com/{github_username}/{libname}'.format(**config.__dict__))
         run('git push --set-upstream origin master')
 
