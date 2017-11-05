@@ -31,6 +31,7 @@
     ],
     "pypi_username": "ddorn",
     "scripts": [
+        "mng=man.man:man",
         "man=man.man:man"
     ],
     "version": "1.5.0"
