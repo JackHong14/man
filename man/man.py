@@ -372,11 +372,8 @@ class AddCli(AddRemCLI):
             if callable(obj) and not isinstance(obj, type):
                 function_names.append(objname)
 
-        def complete(text):
-            return [fn for fn in function_names if fn.startswith(text)]
-
         click.echo('Note that the function will be called without any arguments.')
-        function_name = superprompt.prompt_autocomplete('Name of the function to execute', complete)
+        function_name = superprompt.prompt_choice('Name of the function to execute', function_names)
 
         # replace the directories sep by dots
         # and remove the .py at the end
@@ -385,7 +382,7 @@ class AddCli(AddRemCLI):
         script = '{}={}:{}'.format(name, file, function_name)
 
         for i, sc in enumerate(config.scripts[:]):
-            if script.partition('=')[0] == name:
+            if sc.partition('=')[0] == name:
                 click.echo('There is already a script with this name (%s)' % sc)
                 if click.prompt('Override it ?'):
                     config.scripts[i] = script
@@ -461,11 +458,16 @@ class RemoveCLI(AddRemCLI):
         Aliases: dependancy, dep
         """
 
+        names = [
+            dep.partition('=')[0].partition('>')[0].partition('>')[0]
+            for dep in config.dependancies
+        ]
+
         if not lib:
-            lib = superprompt.prompt_choice('Dependacy to remove', config.dependancies)
+            lib = superprompt.prompt_choice('Dependacy to remove', names)
 
         for dep in config.dependancies[:]:
-            if lib == dep.partition('=')[0]:
+            if lib == dep.partition('=')[0].partition('>')[0].partition('>')[0]:
                 config.dependancies.remove(dep)
                 click.echo('Removed dependancy %s' % dep)
                 break
