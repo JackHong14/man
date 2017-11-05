@@ -10,7 +10,7 @@ except FileNotFoundError:
 
 setup(
     name='man',
-    version='1.5.0',
+    version='1.5.1',
     packages=['man'],
     url='https://github.com/ddorn/man',
     license='MIT',
@@ -20,6 +20,6 @@ setup(
     long_description=long_description,
     install_requires=['pyconfiglib==1.*', 'pypandoc', 'superprompt'],
     include_package_data=True,
-    scripts=dict(console_scripts=['man=man.man:man']),
+    scripts=dict(console_scripts=['mng=man.man:man', 'man=man.man:man']),
     keywords='libraries developpement deployment versioning setuptools management distribution packaging PyPi'
 )

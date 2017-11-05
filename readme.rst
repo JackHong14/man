@@ -121,5 +121,5 @@ prompt disponible, with autocompletion.
 
 By Diego Dorn
 
-.. |Build Status| image:: https://travis-ci.org/ddorn/man.svg?branch=v1.5.0
+.. |Build Status| image:: https://travis-ci.org/ddorn/man.svg?branch=v1.5.1
    :target: https://travis-ci.org/ddorn/man
